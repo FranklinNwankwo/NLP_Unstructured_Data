@@ -2154,6 +2154,28 @@ Hazardous Liquid Accident PHMSA F7000 1 Rev 3-2021 Data fields.pdf
 
 Companion fields: INSTALLATION_YEAR (C4), MANUFACTURED_YEAR (C4a)
 
+### SYSTEM_PART_INVOLVED — CONFIRMED (Part A, Question 14, "formerly C2")
+A14. Part of system involved in Accident: (select only one)
+- Onshore Breakout Tank or Storage Vessel, Including Attached Appurtenances
+- Onshore Terminal/Tank Farm Equipment and Piping
+- Onshore Equipment and Piping Associated with Belowground Storage
+- Onshore Pump/Meter Station Equipment and Piping
+- Onshore Pipeline, Including Valve Sites
+- Offshore Platform/Deepwater Port, Including Platform-mounted Equipment and Piping
+- Offshore Pipeline, Including Riser and Riser Bend
+
+Same structural pattern as gas_transmission_gathering: a broad facility-category
+field (SYSTEM_PART_INVOLVED, Part A) sitting above the granular equipment field
+(ITEM_INVOLVED, Part C Question 3). Use SYSTEM_PART_INVOLVED for coarse-grained
+facility-type weak supervision and ITEM_INVOLVED for fine-grained EQUIPMENT
+entity extraction — same two-tier approach as gas transmission.
+
+Note: value list reads noticeably liquid-specific — Breakout Tank, Terminal/
+Tank Farm, Pump/Meter Station — versus gas transmission's more gas-infrastructure-
+flavored list (Compressor Station, Regulator/Metering Station). Confirms these
+two "coarse" fields, while structurally parallel, are NOT interchangeable
+vocabulary across commodities — don't merge them into one shared gazetteer list,
+keep them commodity-tagged same as everything else.
 
 ### Release/quantity fields â€” CONFIRMED, barrels not mcf (as expected)
 - UNINTENTIONAL_RELEASE_BBLS (A7) â€” "Estimated volume of commodity released
@@ -2176,3 +2198,4 @@ Companion fields: INSTALLATION_YEAR (C4), MANUFACTURED_YEAR (C4a)
 ### Encoding â€” CONFIRMED: cp1252
 utf-8 fails on byte 0x96 (cp1252 en-dash) â€” same pattern as the other two
 commodities, all three PHMSA exports use cp1252 consistently.
+
