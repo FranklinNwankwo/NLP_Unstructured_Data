@@ -1,0 +1,11 @@
+pandas>=2.2
+numpy>=1.26
+spacy>=3.7
+transformers>=4.44
+datasets>=2.20
+seqeval>=1.2.2
+scikit-learn>=1.5
+boto3>=1.34
+label-studio
+streamlit>=1.38
+spacy-streamlit>=1.0.6
