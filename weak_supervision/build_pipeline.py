@@ -1,111 +1,180 @@
 """
-Assembles the full weak-supervision pipeline: EntityRuler (EQUIPMENT +
-FAILURE_MODE, from equipment_gazetteer.py and cause_gazetteer.py) plus a
-custom Matcher-based component (QUANTITY, from quantity_matcher.py) in one
-spaCy pipeline.
+Assembles the full weak-supervision pipeline: EntityRuler (EQUIPMENT,
+FAILURE_MODE, CONSEQUENCE, ACTION_TAKEN) + fire_service_filter + a Matcher-
+based QUANTITY component, in one spaCy pipeline.
 
-Default en_core_web_sm NER is disabled — we're not using its PERSON/ORG/etc.
-labels, and leaving it enabled would create competing, overlapping entity
-spans on the same tokens as our custom labels.
+Default en_core_web_sm NER is disabled — its PERSON/ORG/etc. labels would
+compete with our custom labels on the same tokens.
 """
 
 import spacy
+from collections import Counter
 from spacy.language import Language
 from spacy.tokens import Doc, Span
 from spacy.util import filter_spans
 
 from equipment_gazetteer import build_equipment_patterns
 from cause_gazetteer import build_cause_patterns
+from consequence_action_gazetteer import (
+    build_consequence_patterns, build_action_patterns, FIRE_SERVICE_WORDS, FIRE_SERVICE_STEMS,
+)
 from quantity_matcher import build_quantity_matcher, UNIT_TYPE_MAP
+
+import re
+
+# Scoped to the terms measure_negation.py showed were actually a problem
+# (>=25% negated). Other CONSEQUENCE/ACTION_TAKEN terms measured clean and
+# are left alone — a general negation model would be overkill for three words.
+NEGATED_TERMS = {"fatality", "fatalities", "injury", "injuries", "leaks"}
+NEGATION_WINDOW = re.compile(
+    r"\b(no|not|without|never|none)\b\s*$"                    # "NO $"
+    r"|\b(no|not|without|never|none)\b(\s+\S+){1,3}\s+(or|nor)\s*$",  # "NO X OR $"
+    re.I,
+)
+
+@Language.component("negation_filter")
+def negation_filter(doc: Doc) -> Doc:
+    kept = []
+    for ent in doc.ents:
+        if ent.label_ == "CONSEQUENCE" and ent.text.lower() in NEGATED_TERMS:
+            preceding = doc[max(0, ent.start - 5):ent.start].text
+            if NEGATION_WINDOW.search(preceding):
+                continue
+        kept.append(ent)
+    doc.ents = kept
+    return doc
+
+@Language.component("fire_service_filter")
+def fire_service_filter(doc: Doc) -> Doc:
+    """
+    Drops CONSEQUENCE 'FIRE' spans that actually refer to the fire service
+    (FIRE DEPARTMENT, FIRE DEPT., FIRE-FIGHTERS, FIRE/POLICE, ...).
+    """
+    kept = []
+    for ent in doc.ents:
+        if ent.label_ == "CONSEQUENCE" and ent.text.lower() == "fire":
+            i = ent.end
+            nxt = doc[i] if i < len(doc) else None
+            if nxt is not None and nxt.lower_ in ("-", "/") and i + 1 < len(doc):
+                nxt = doc[i + 1]
+            if nxt is not None and (nxt.lower_ in FIRE_SERVICE_WORDS or nxt.lower_.startswith(FIRE_SERVICE_STEMS)):
+                continue
+        kept.append(ent)
+    doc.ents = kept
+    return doc
 
 
 @Language.component("quantity_component")
 def quantity_component(doc: Doc) -> Doc:
     """
     Runs the QUANTITY Matcher and merges its spans into doc.ents alongside
-    whatever EntityRuler already placed there (EQUIPMENT, FAILURE_MODE).
-    Uses filter_spans to resolve overlaps — existing ents (from EntityRuler,
-    which runs earlier in the pipeline) take priority over new QUANTITY
-    matches when they overlap, since equipment/cause spans were already
-    confirmed via verbatim/derived gazetteer terms and QUANTITY spans are
-    numeric and rarely should overlap with them anyway.
+    what the EntityRuler already placed there. Existing ents take priority
+    on overlap (filter_spans keeps longer/earlier spans).
     """
     matcher = doc._.quantity_matcher
-    matches = matcher(doc)
-
     quantity_spans = []
-    for match_id, start, end in matches:
+    for match_id, start, end in matcher(doc):
         rule_name = doc.vocab.strings[match_id]
         span = Span(doc, start, end, label="QUANTITY")
         span._.unit_type = UNIT_TYPE_MAP[rule_name]
         quantity_spans.append(span)
 
-    # Existing ents first (priority), then new quantity spans — filter_spans
-    # keeps longer/earlier spans and drops overlapping shorter ones
-    all_spans = list(doc.ents) + quantity_spans
-    doc.ents = filter_spans(all_spans)
+    doc.ents = filter_spans(list(doc.ents) + quantity_spans)
     return doc
 
 
 def build_pipeline():
     nlp = spacy.load("en_core_web_sm", disable=["ner"])
 
-    # Register the unit_type extension on Span, so quantity_component can
-    # attach it without erroring on re-registration if this is called twice
     if not Span.has_extension("unit_type"):
         Span.set_extension("unit_type", default=None)
 
-    # EntityRuler — EQUIPMENT + FAILURE_MODE, phrase-based
     ruler = nlp.add_pipe(
-    "entity_ruler",
-    config={"phrase_matcher_attr": "LOWER"},
-    before="parser" if "parser" in nlp.pipe_names else None,
-)
-    patterns = build_equipment_patterns() + build_cause_patterns()
+        "entity_ruler",
+        config={"phrase_matcher_attr": "LOWER"},
+        before="parser" if "parser" in nlp.pipe_names else None,
+    )
+    equipment = build_equipment_patterns()
+    cause = build_cause_patterns()
+    consequence = build_consequence_patterns()
+    action = build_action_patterns()
+    patterns = equipment + cause + consequence + action
     ruler.add_patterns(patterns)
     print(f"EntityRuler loaded with {len(patterns)} patterns "
-          f"({len(build_equipment_patterns())} EQUIPMENT, "
-          f"{len(build_cause_patterns())} FAILURE_MODE)")
+          f"({len(equipment)} EQUIPMENT, {len(cause)} FAILURE_MODE, "
+          f"{len(consequence)} CONSEQUENCE, {len(action)} ACTION_TAKEN)")
 
-    # Quantity Matcher, stored as a doc extension so the pipeline component
-    # can access it per-doc without rebuilding it every call
     quantity_matcher = build_quantity_matcher(nlp)
     if not Doc.has_extension("quantity_matcher"):
         Doc.set_extension("quantity_matcher", default=quantity_matcher)
 
+    # Order matters: filter first, so quantity overlap resolution sees the
+    # already-filtered entities.
+    nlp.add_pipe("fire_service_filter", last=True)
+    nlp.add_pipe("negation_filter", last=True)
     nlp.add_pipe("quantity_component", last=True)
 
     return nlp
 
 
-if __name__ == "__main__":
-    nlp = build_pipeline()
-    print(f"\nFull pipeline: {nlp.pipe_names}")
-
-    # Real narratives from your Step 11 spot-check sample — testing all
-    # three entity types together, across commodities
-    test_narratives = [
-        "ON MAY 29, 2014 A THIRD PARTY CONTRACTOR STRUCK A 4-INCH PLASTIC "
-        "GAS DISTRIBUTION MAIN WITH A BACKHOE. THE CONTRACTOR HELD A VALID "
-        "USA TICKET FOR THE AREA.",
-
-        "A 4-IN RELIEF VALVE HAD FAILED WHERE IT RELIEVED NATURAL GAS INTO "
-        "ATMOSPHERE. TOTAL AMOUNT OF NATURAL GAS RELEASED WAS CALCULATED "
-        "TO BE 9,303 MCF.",
-
-        "THE RELEASE WAS DUE TO ICE THAT FORMED IN A 1.5 INCH GLOBE VALVE. "
-        "THE VALVE WAS LOCATED ON A DEHYDRATION UNIT.",
-
-        "APPROXIMATELY 2.5 BARRELS OF CRUDE OIL WERE RELEASED FROM AN "
-        "AUXILIARY VALVE. VISUAL EXAMINATION REVEALED EXTERNAL CORROSION "
-        "AT THE FAILURE POINT.",
+def run_checks(nlp):
+    """(text, {(label, TEXT): expected_count}) — count 0 means must NOT appear."""
+    cases = [
+        ("THE FIRE DEPARTMENT ARRIVED AND EXTINGUISHED THE FIRE.",
+         {("CONSEQUENCE", "FIRE"): 1, ("ACTION_TAKEN", "EXTINGUISHED"): 1}),
+        ("FIRE DEPT. WAS NOTIFIED.",
+         {("CONSEQUENCE", "FIRE"): 0}),
+        ("FIRE-FIGHTERS ISOLATED THE LEAK.",
+         {("CONSEQUENCE", "FIRE"): 0, ("ACTION_TAKEN", "ISOLATED"): 1,
+          ("CONSEQUENCE", "LEAK"): 1}),
+        ("THE FIRE/POLICE UNITS ARRIVED.",
+         {("CONSEQUENCE", "FIRE"): 0}),
+        ("THE RELEASE RESULTED IN AN EXPLOSION AND ONE FATALITY. "
+         "TWO RESIDENTS WERE EVACUATED.",
+         {("CONSEQUENCE", "RELEASE"): 1, ("CONSEQUENCE", "EXPLOSION"): 1,
+          ("CONSEQUENCE", "FATALITY"): 1, ("CONSEQUENCE", "EVACUATED"): 1}),
+        ("THE LINE WAS SHUT-IN AND BLOWN DOWN, THEN THE SECTION WAS REPLACED.",
+         {("ACTION_TAKEN", "SHUT-IN"): 1, ("ACTION_TAKEN", "BLOWN DOWN"): 1,
+          ("ACTION_TAKEN", "REPLACED"): 1}),
+        ("REPAIR COSTS WERE $50,000 AND THE 4-INCH MAIN WAS REPAIRED.",
+         {("ACTION_TAKEN", "REPAIR"): 0, ("ACTION_TAKEN", "REPAIRED"): 1,
+          ("QUANTITY", "$50,000"): 1, ("QUANTITY", "4-INCH"): 1}),
+        ("APPROXIMATELY 2.5 BARRELS OF CRUDE OIL WERE RELEASED FROM AN AUXILIARY "
+         "VALVE. VISUAL EXAMINATION REVEALED EXTERNAL CORROSION.",
+         {("QUANTITY", "2.5 BARRELS"): 1, ("EQUIPMENT", "AUXILIARY VALVE"): 1,
+          ("FAILURE_MODE", "EXTERNAL CORROSION"): 1,
+          ("CONSEQUENCE", "RELEASED"): 1}),
+        ("THE FDNY FIRE MARSHALS AND FIRE CHIEFS ARRIVED.",
+         {("CONSEQUENCE", "FIRE"): 0}),
+        ("THE FIRE DEPARTMENT'S TRUCKS AND THE FIRE DEPTARTMENT ARRIVED.",
+         {("CONSEQUENCE", "FIRE"): 0}),
+        ("A FIRE REPORTED AT 3 AM DAMAGED THE HOUSE.",
+         {("CONSEQUENCE", "FIRE"): 1}),
+        ("THERE WERE NO FATALITIES OR INJURIES REPORTED. NO LEAKS WERE FOUND.",
+         {("CONSEQUENCE", "FATALITIES"): 0, ("CONSEQUENCE", "INJURIES"): 0,
+          ("CONSEQUENCE", "LEAKS"): 0}),
+        ("THE INCIDENT RESULTED IN TWO FATALITIES AND SEVERAL INJURIES.",
+         {("CONSEQUENCE", "FATALITIES"): 1, ("CONSEQUENCE", "INJURIES"): 1}),
+        ("THE REPORT NOTED NO FATALITIES OR INJURIES AT THE SCENE.",
+         {("CONSEQUENCE", "FATALITIES"): 0, ("CONSEQUENCE", "INJURIES"): 0}),
     ]
 
-    for text in test_narratives:
+    failures = 0
+    for text, expected in cases:
         doc = nlp(text)
-        print(f"\n{'='*70}\n{text}\n")
-        if not doc.ents:
-            print("  NO ENTITIES FOUND")
-        for ent in doc.ents:
-            extra = f" (unit_type={ent._.unit_type})" if ent.label_ == "QUANTITY" else ""
-            print(f"  [{ent.label_}] '{ent.text}'{extra}")
+        counts = Counter((e.label_, e.text.upper()) for e in doc.ents)
+        ok = all(counts[key] == n for key, n in expected.items())
+        failures += 0 if ok else 1
+        print(f"[{'PASS' if ok else 'FAIL'}] {text}")
+        if not ok:
+            for key, n in expected.items():
+                if counts[key] != n:
+                    print(f"        expected {key} x{n}, got x{counts[key]}")
+            print(f"        all ents: {[(e.label_, e.text) for e in doc.ents]}")
+    print(f"\n{len(cases) - failures}/{len(cases)} checks passed")
+
+
+if __name__ == "__main__":
+    nlp = build_pipeline()
+    print(f"\nFull pipeline: {nlp.pipe_names}\n")
+    run_checks(nlp)
