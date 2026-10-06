@@ -1,4 +1,15 @@
-﻿# Gas Distribution
+# PHMSA field notes: audit record
+
+Last checked 2026-10-06 against the numbered column lists in this file. On that date the garbled
+characters were repaired, wrong column names were corrected, and notes that said "not yet confirmed" were
+updated where a later note had confirmed the item. The "Corrections log" at the end lists every change and
+what is still unconfirmed.
+
+How to read it: each commodity has (1) the numbered column list copied from PHMSA's data-fields PDF,
+verbatim, then (2) a `## <commodity>` section of interpretation notes. Column numbers in the notes refer
+to those lists.
+
+# Gas Distribution
 
 Gas Distribution Incident Form - PHMSA F 7100.1 Rev 9-2023 Data fields.pdf
 incident_gas_distribution_jan2010_present.txt
@@ -480,8 +491,8 @@ incident_gas_distribution_jan2010_present.txt
 - Encoding: cp1252 (see confirmation notes below)
 - Delimiter: \t (tab)
 
-### Cause structure â€” NOT a flat CAUSE/SUBCAUSE pair
-Top-level field: CAUSE (Part G, apparent cause) â€” selects ONE of 8 categories.
+### Cause structure — NOT a flat CAUSE/SUBCAUSE pair
+Top-level field: CAUSE (Part G, apparent cause) — selects ONE of 8 categories.
 Companion field: CAUSE_DETAILS
 
 Category-specific sub-fields (only one set populates per row, depending on which
@@ -489,35 +500,35 @@ CAUSE category was selected):
 
 | CAUSE category | Sub-cause field(s) that populate for this category |
 |---|---|
-| G2 â€“ Natural Force Damage | NATURAL_FORCE_TYPE (+ EARTH_SUBTYPE, HEAVY_RAINS_SUBTYPE, LIGHTNING_SUBTYPE, TEMPERATURE_SUBTYPE) |
-| G3 â€“ Excavation Damage | PARTY_TYPE |
-| G4 â€“ Other Outside Force Damage | OUTSIDE_FORCE_TYPE (+ VEHICLE_SUBTYPE, OSF_HURRICANE_IND, OSF_TROPICAL_STORM_IND, OSF_TORNADO_IND, OSF_HEAVY_RAINS_IND, OSF_OTHER_WEATHER_DETAILS) |
-| G5 â€“ Pipe, Weld, or Joint Failure | ADDITIONAL_ARC, ADDITIONAL_LACK_FUSION |
-| G6 â€“ Equipment Failure | EQ_FAILURE_TYPE |
-| G7 â€“ Incorrect Operation | CATEGORY_TYPE |
-| G8 â€“ Other Incident Cause | free-text "Specify" field |
+| G2 – Natural Force Damage | NATURAL_FORCE_TYPE (+ EARTH_SUBTYPE, HEAVY_RAINS_SUBTYPE, LIGHTNING_SUBTYPE, TEMPERATURE_SUBTYPE) |
+| G3 – Excavation Damage | EX_PARTY_TYPE |
+| G4 – Other Outside Force Damage | OUTSIDE_FORCE_TYPE (+ VEHICLE_SUBTYPE, OSF_HURRICANE_IND, OSF_TROPICAL_STORM_IND, OSF_TORNADO_IND, OSF_HEAVY_RAINS_IND, OSF_OTHER_WEATHER_DETAILS) |
+| G5 – Pipe, Weld, or Joint Failure | PWJF_FAILURE_TYPE (321) + PWJF_FAILURE_DETAILS (348), ADDITIONAL_ARC_BURN_IND (352), ADDITIONAL_LACK_FUSION_IND (354) and the weld/joint subtype columns in 322-354 |
+| G6 – Equipment Failure | EQ_FAILURE_TYPE |
+| G7 – Incorrect Operation | CATEGORY_TYPE |
+| G8 – Other Incident Cause | free-text "Specify" field |
 
-### G1 â€“ Corrosion Failure â€” FULL, CORRECTED (replaces all earlier corrosion notes)
+### G1 – Corrosion Failure — FULL, CORRECTED (replaces all earlier corrosion notes)
 
-Top-level selector: INTERNAL_EXTERNAL â€” choose Internal Corrosion or External Corrosion
+Top-level selector: INTERNAL_EXTERNAL — choose Internal Corrosion or External Corrosion
 (this determines which question set below applies)
 
 **If External Corrosion:**
-- VISUAL_EXAM_RESULTS (Q1) â€” Localized Pitting / General Corrosion / Other (+VISUAL_EXAM_DETAILS)
+- VISUAL_EXAM_RESULTS (Q1) — Localized Pitting / General Corrosion / Other (+VISUAL_EXAM_DETAILS)
 - Q2 Type of corrosion (multi-select): GALVANIC_CORROSION_IND, ATMOSPHERE_CORROSION_IND,
   STRAY_CURRENT_CORROSION_IND, MICROBIOLOGICAL_CORROSION_IND, SELECTIVE_SEAM_CORROSION_IND,
   OTHER_CORROSION_IND (+CORROSION_TYPE_DETAILS)
-  â€” NOTE: no EXT_ prefix on these; earlier "EXTRNL_COR_*" reading was a garbled grep
+  — NOTE: no EXT_ prefix on these; earlier "EXTRNL_COR_*" reading was a garbled grep
     artifact from an interleaved-column index page, disregard it
-- STRAY_CURRENT_TYPE (Q2a) â€” Alternating Current / Direct Current
+- STRAY_CURRENT_TYPE (Q2a) — Alternating Current / Direct Current
 - STRAY_CURRENT_DETAILS (Q2b)
 - Q3 basis (multi-select): FIELD_EXAM_BASIS_IND, METALLURGICAL_BASIS_IND, OTHER_BASIS_IND
   (+CORROSION_BASIS_DETAILS)
-- UNDERGROUND_LOCATION (Q4) â€” was failed item buried/submerged? Y/N
+- UNDERGROUND_LOCATION (Q4) — was failed item buried/submerged? Y/N
 - UNDER_CATHODIC_PROTECTION_IND, CATHODIC_PRO_START_YEAR (Q4a)
 - SHIELDING_EVIDENT (Q4b)
 - CATHODIC_SURVEY_TYPE, CP_ANNUAL_SURVEY_IND/YEAR, CLOSE_INTERVAL_SURVEY_IND/YEAR (Q4c,
-  continues beyond what's captured â€” cathodic protection survey detail, low priority
+  continues beyond what's captured — cathodic protection survey detail, low priority
   for entity extraction, not pursuing further)
 
 **If Internal Corrosion (previously confirmed, unchanged):**
@@ -527,44 +538,52 @@ Top-level selector: INTERNAL_EXTERNAL â€” choose Internal Corrosion or Exte
   (+INT_CORROSION_BASIS_DETAILS)
 - Q10 location: INT_LOW_POINT_PIPE_LOC_IND, INT_ELBOW_LOC_IND, INT_DROP_OUT_LOC_IND,
   INT_OTHER_LOC_IND (+CORROSION_LOCATION_DETAILS)
-- Q11â€“14: CORROSION_INHIBITOR, LIQUID_FOUND, COR_HYDROTEST_LEAK_SURVEY_DATE,
+- Q11–14: CORROSION_INHIBITORS, LIQUID_FOUND, COR_HYDROTEST_LEAK_SURVEY_DATE,
   COR_HYDROTEST_CONDUCTED_IND
 
-### Root cause structure â€” separate system from CAUSE above
-ROOT_CAUSE, ROOT_CAUSE_CATEGORY, ROOT_CAUSE_TYPE (Part J, CGA-DIRT Root Cause,
-question 16) â€” this is contributing-factor analysis, distinct from Part G's
-apparent cause. Do not conflate with CAUSE/CAUSE_DETAILS above.
+### Root cause structure — separate from CAUSE above, and excavation-block only (CORRECTED)
+ROOT_CAUSE_CATEGORY (284), ROOT_CAUSE_TYPE (285), ROOT_CAUSE_TYPE_OTHER (286) — CGA-DIRT
+root cause, question 16. There is NO bare ROOT_CAUSE column.
+CORRECTED 2026-10-06: an earlier version of these notes called these columns universal
+("Part J, all causes"). The column order contradicts that: they sit INSIDE the
+excavation-damage block (EX_PARTY_TYPE 243 ... SERVICE_INTERRUPTION_HOURS 283, then
+OUTSIDE_FORCE_TYPE 287 starts the next category), the same position as in
+gas_transmission_gathering. VERIFIED on the loaded data (2026-10-06): the share of rows with a
+value is 0.99 for EXCAVATION DAMAGE (549 rows) and 0.00 for every other CAUSE value.
+This is distinct from Part G's apparent cause; do not conflate with CAUSE/CAUSE_DETAILS.
 
 ### Mapping to phmsa_ner_schema.md entity types
 - CAUSE + CAUSE_DETAILS + the category-specific sub-cause field (per table above)
-  â†’ weak-supervision source for FAILURE_MODE (schema Â§2.2)
-- ROOT_CAUSE + ROOT_CAUSE_CATEGORY + ROOT_CAUSE_TYPE
-  â†’ weak-supervision source for CAUSE_FACTOR (schema Â§2.3)
-- ITEM_INVOLVED equivalent (still being located â€” see "Open questions" below)
-  â†’ weak-supervision source for EQUIPMENT (schema Â§2.1)
+  → weak-supervision source for FAILURE_MODE (schema §2.2)
+- ROOT_CAUSE_CATEGORY + ROOT_CAUSE_TYPE (+ _OTHER), excavation-damage rows only
+  → planned weak-supervision source for CAUSE_FACTOR (schema §2.3).
+  AS BUILT: no CAUSE_FACTOR gazetteer was created; CAUSE_FACTOR spans were annotated by hand.
+- SYSTEM_PART_INVOLVED (this form has no ITEM_INVOLVED column; see "Equipment/asset
+  column" below)
+  → weak-supervision source for EQUIPMENT (schema §2.1)
 
 ### Release/quantity fields
-- UNINTENTIONAL_RELEASE â€” unit: thousand standard cubic feet (mcf) â€” NOTE: gas
-  unit, not barrels (barrels is hazardous liquid's unit â€” QUANTITY.unit_type
+- UNINTENTIONAL_RELEASE — unit: thousand standard cubic feet (mcf) — NOTE: gas
+  unit, not barrels (barrels is hazardous liquid's unit — QUANTITY.unit_type
   attribute must distinguish volume_gas vs volume_liquid, not treat as one
   generic "volume")
-- INTENTIONAL_RELEASE â€” same mcf unit, controlled/blowdown release
-- COMMODITY_RELEASED_TYPE â€” type of gas released
-- RELEASE_TYPE â€” type of release event
-- EST_COST_UNINTENTIONAL_RELEASE, EST_COST_INTENTIONAL_RELEASE â€” cost fields, $
+- INTENTIONAL_RELEASE — same mcf unit, controlled/blowdown release
+- COMMODITY_RELEASED_TYPE — type of gas released
+- RELEASE_TYPE — type of release event
+- EST_COST_UNINTENTIONAL_RELEASE, EST_COST_INTENTIONAL_RELEASE — cost fields, $
 
 
-### Equipment/asset column â€” CONFIRMED
-- SYSTEM_PART_INVOLVED (Part C, Question 2) â€” "Part of system involved in Incident"
-  â†’ weak-supervision source for EQUIPMENT (schema Â§2.1)
+### Equipment/asset column — CONFIRMED
+- SYSTEM_PART_INVOLVED (Part C, Question 2) — "Part of system involved in Incident"
+  → weak-supervision source for EQUIPMENT (schema §2.1)
   Full value list confirmed below.
 
-- PIPE_FACILITY_TYPE (Part C, Question 1) â€” ownership category
-  (privately/municipally/investor owned/cooperative), NOT equipment type â€”
+- PIPE_FACILITY_TYPE (Part C, Question 1) — ownership category
+  (privately/municipally/investor owned/cooperative), NOT equipment type —
   do not map this to EQUIPMENT
 
 
-  ### SYSTEM_PART_INVOLVED â€” full value list (Part C, Question 2)
+  ### SYSTEM_PART_INVOLVED — full value list (Part C, Question 2)
 - Main
 - Main Valve
 - Service
@@ -577,62 +596,64 @@ apparent cause. Do not conflate with CAUSE/CAUSE_DETAILS above.
 - Other (free text: SYSTEM_PART_DETAILS)
 
 Companion fields:
-- SYSTEM_PART_DETAILS â€” free text, only populated when SYSTEM_PART_INVOLVED = "Other"
+- SYSTEM_PART_DETAILS — free text, only populated when SYSTEM_PART_INVOLVED = "Other"
 - INSTALLATION_YEAR (C2a)
 - MANUFACTURED_YEAR (C2b)
-- CUSTOMER_TYPE (C2c) â€” only populated when SYSTEM_PART_INVOLVED is anything
+- CUSTOMER_TYPE (C2c) — only populated when SYSTEM_PART_INVOLVED is anything
   other than "Main", "Main Valve", "District Regulator/Metering Station", "Other"
 
 
-### Cause sub-fields â€” G2, G3, G4 (completing the table from earlier)
+### Cause sub-fields — G2, G3, G4 (completing the table from earlier)
 
-**G2 â€“ Natural Force Damage**
-- NATURAL_FORCE_TYPE â€” top-level subtype selector. Values: Earth Movement (not
+**G2 – Natural Force Damage**
+- NATURAL_FORCE_TYPE — top-level subtype selector. Values: Earth Movement (not
   due to heavy rain), Heavy Rains/Floods, Lightning, Temperature, High Winds,
   Tree/Vegetation Roots, Damage from Snow/Ice Impact or Accumulation
-- EARTH_SUBTYPE â€” Earthquake / Subsidence / Landslide / Other (NF_OTHER_DETAILS)
-- HEAVY_RAINS_SUBTYPE â€” Washouts/Scouring / Flotation / Mudslide / Other
-- LIGHTNING_SUBTYPE â€” Direct hit / Secondary impact (nearby fires)
-- TEMPERATURE_SUBTYPE â€” Thermal Stress / Frost Heave / Frozen Components / Other
+- EARTH_SUBTYPE — Earthquake / Subsidence / Landslide / Other (NF_OTHER_DETAILS)
+- HEAVY_RAINS_SUBTYPE — Washouts/Scouring / Flotation / Mudslide / Other
+- LIGHTNING_SUBTYPE — Direct hit / Secondary impact (nearby fires)
+- TEMPERATURE_SUBTYPE — Thermal Stress / Frost Heave / Frozen Components / Other
 
-**G3 â€“ Excavation Damage**
-- PARTY_TYPE â€” Excavation Damage by Operator (First Party) / by Operator's
+**G3 – Excavation Damage**
+- EX_PARTY_TYPE — Excavation Damage by Operator (First Party) / by Operator's
   Contractor (Second Party) / by Third Party / Previous Damage due to
   Excavation Activity
-  â†’ this is the direct weak-supervision source for schema's PARTY_ROLE
-    entity (Â§2.11) when CAUSE = G3
+  → planned direct weak-supervision source for schema's PARTY_ROLE entity (§2.11)
+    when CAUSE = G3. AS BUILT: no PARTY_ROLE gazetteer was created.
+  (An earlier version named this column PARTY_TYPE; no such column exists. The raw
+  list shows EX_PARTY_TYPE in all three commodities: 243 / 313 / 348.)
 
-**G4 â€“ Other Outside Force Damage**
-- OUTSIDE_FORCE_TYPE â€” see "OUTSIDE_FORCE_TYPE â€” final confirmed list" section
+**G4 – Other Outside Force Damage**
+- OUTSIDE_FORCE_TYPE — see "OUTSIDE_FORCE_TYPE — final confirmed list" section
   below for the complete value list
-- VEHICLE_SUBTYPE â€” populated only under the vehicle-damage option; records
+- VEHICLE_SUBTYPE — populated only under the vehicle-damage option; records
   who operated the vehicle: Operator / Operator's Contractor / Third Party
 - OSF_HURRICANE_IND, OSF_TROPICAL_STORM_IND, OSF_TORNADO_IND,
-  OSF_HEAVY_RAINS_IND, OSF_OTHER_WEATHER_DETAILS â€” extreme-weather-event
+  OSF_HEAVY_RAINS_IND, OSF_OTHER_WEATHER_DETAILS — extreme-weather-event
   contributing factors, populated only for certain OUTSIDE_FORCE_TYPE values
 
 
-  ### Encoding â€” CONFIRMED: cp1252
+  ### Encoding — CONFIRMED: cp1252
 Chosen over latin1 (visually identical on this sample, but the failing utf-8
-byte 0x91 is a cp1252 right-curly-quote â€” consistent with cp1252, and cp1252
+byte 0x91 is a cp1252 right-curly-quote — consistent with cp1252, and cp1252
 is the far more common actual encoding for Windows-originated US federal
 data exports; latin1 "working" here is coincidental non-divergence in this
 particular sample, not independent confirmation)
 
-### OUTSIDE_FORCE_TYPE â€” final confirmed list
+### OUTSIDE_FORCE_TYPE — final confirmed list
 - Nearby Industrial, Man-made, or Other Fire/Explosion as Primary Cause of Incident
 - Damage by Car, Truck, or Other Motorized Vehicle/Equipment NOT Engaged in Excavation
-  (â†’ VEHICLE_SUBTYPE: Operator / Operator's Contractor / Third Party)
+  (→ VEHICLE_SUBTYPE: Operator / Operator's Contractor / Third Party)
 - Damage by Boats, Barges, Drilling Rigs, or Other Maritime Equipment or Vessels
   Set Adrift or Which Have Otherwise Lost Their Mooring
 - Routine or Normal Fishing or Other Maritime Activity NOT Engaged in Excavation
 - Electrical Arcing from Other Equipment or Facility
 - Previous Mechanical Damage NOT Related to Excavation
 
-### Bonus find â€” INTENTIONAL_SUBTYPE (line 813, adjacent field worth logging)
+### Bonus find — INTENTIONAL_SUBTYPE (line 813, adjacent field worth logging)
 - Vandalism
 - Terrorism
-(likely continues â€” not part of G4, may belong to a different cause category
+(likely continues — not part of G4, may belong to a different cause category
 or a standalone intentional-damage flag; not required for gas distribution's
 Step 8 close-out, but note it exists in case it surfaces again)
 
@@ -1272,85 +1293,88 @@ incident_gas_transmission_gathering_jan2010_present.zip
 
 ### Core columns
 - Narrative text column: NARRATIVE (column 621)
-- Delimiter: \t (tab) â€” encoding: not yet confirmed, same process as before, run the
-  cp1252/utf-8/latin1 pandas-read test on this file specifically (don't assume it
-  matches gas distribution's cp1252 â€” verify independently)
+- Delimiter: \t (tab)
+- Encoding: cp1252 (independently confirmed, see "Encoding" below)
 
-### Cause structure â€” same G1-G8 category system as gas distribution, SAME field
+### Cause structure — same G1-G8 category system as gas distribution, SAME field
 names for CAUSE/CAUSE_DETAILS and the corrosion sub-fields (columns 247-300 match
 gas distribution's INTERNAL_EXTERNAL/GALVANIC_CORROSION_IND/etc. almost exactly)
-- CAUSE (247), CAUSE_DETAILS (248) â€” top-level, same as distribution
+- CAUSE (247), CAUSE_DETAILS (248) — top-level, same as distribution
 - G1 Corrosion: INTERNAL_EXTERNAL (249), then external corrosion fields 250-276,
-  internal corrosion fields 279-300 â€” field names are IDENTICAL to gas distribution's
-  confirmed set (GALVANIC_CORROSION_IND, INT_CORROSIVE_COMMODITY_IND, etc.) â€” this
+  internal corrosion fields 279-300 — field names are IDENTICAL to gas distribution's
+  confirmed set (GALVANIC_CORROSION_IND, INT_CORROSIVE_COMMODITY_IND, etc.) — this
   is a genuine cross-commodity match, reuse the gas_distribution mapping directly
   for this category
-- G2 Natural Force: NATURAL_FORCE_TYPE (301) + subtypes (302-312) â€” same structure
+- G2 Natural Force: NATURAL_FORCE_TYPE (301) + subtypes (302-312) — same structure
   as distribution
-- G3 Excavation Damage: EX_PARTY_TYPE (313, note the "EX_" prefix â€” distribution's
-  equivalent was PARTY_TYPE with no prefix, don't assume identical column name)
+- G3 Excavation Damage: EX_PARTY_TYPE (313) — same column name as in the other two
+  commodities (243 / 313 / 348)
   + extensive one-call/notification detail (314-349)
-- ROOT_CAUSE_CATEGORY (350), ROOT_CAUSE_TYPE (351) â€” positioned inside the
-  excavation-damage column block (313-352), unlike gas distribution where
-  ROOT_CAUSE/ROOT_CAUSE_CATEGORY/ROOT_CAUSE_TYPE sat in a separate universal
-  Part J. NEEDS VERIFICATION: does CGA-DIRT root cause apply only to excavation
-  damage in this form, or universally like distribution? Column position suggests
-  excavation-specific â€” confirm via grep before assuming it's universal.
-- G4 Other Outside Force: OUTSIDE_FORCE_TYPE (353) + subtypes (354-381) â€”
+- ROOT_CAUSE_CATEGORY (350), ROOT_CAUSE_TYPE (351), ROOT_CAUSE_TYPE_OTHER (352) —
+  positioned inside the excavation-damage column block (313-352). Confirmed
+  excavation-only (see "ROOT_CAUSE_CATEGORY / ROOT_CAUSE_TYPE scope" below). Gas
+  distribution and hazardous liquid have the same placement.
+- G4 Other Outside Force: OUTSIDE_FORCE_TYPE (353) + subtypes (354-381) —
   matches distribution's structure and field names closely
-- G5 Pipe/Weld/Joint Failure: PWJF_FAILURE_TYPE (382) + extensive sub-detail
-  (383-409) â€” much more granular than distribution's ADDITIONAL_ARC/
-  ADDITIONAL_LACK_FUSION pair; this form breaks it into ~25 columns
+- G5 "MATERIAL FAILURE OF PIPE OR WELD" (this is the CAUSE value in the loaded data; the columns keep
+  the PWJF prefix): PWJF_FAILURE_TYPE (382) + extensive sub-detail
+  (383-409, incl. ADDITIONAL_ARC_BURN_IND 399 and ADDITIONAL_LACK_FUSION_IND 401) —
+  the SAME block structure as gas distribution (PWJF_FAILURE_TYPE 321 ... 354). An
+  earlier version claimed distribution had only an ADDITIONAL_ARC/ADDITIONAL_LACK_FUSION
+  pair; that was wrong.
 - G6 Equipment Failure: EQ_FAILURE_TYPE (410) + extensive sub-detail (411-447)
-- G7 Incorrect Operation: CATEGORY_TYPE (457) â€” same field name as distribution
+- G7 Incorrect Operation: CATEGORY_TYPE (457) — same field name as distribution
 - G8/Other: OTHER_TYPE (460), UNKNOWN_SUBTYPE (462)
 
-### Contributing Factors (Part K) â€” SEPARATE from the CAUSE/G1-G8 block above
+### Contributing Factors (Part K) — SEPARATE from the CAUSE/G1-G8 block above
 Columns 559-608: a large block of "_IND" flags (EXTRNL_COR_*, INTRNL_COR_*, NF_*,
-EXCVTN_DMG_*, OSF_*, PWF_*, EQF_*, IO_*) â€” this is Part K's "select all that apply"
+EXCVTN_DMG_*, OSF_*, PWF_*, EQF_*, IO_*) — this is Part K's "select all that apply"
 contributing-factor checklist, confirmed by the PDF grep ("Enter secondary,
-contributing, or root causes... Part K â€“ Contributing Factors"). This is
-STRUCTURALLY DIFFERENT from the CAUSE/G1-G8 primary-cause block â€” same category
+contributing, or root causes... Part K – Contributing Factors"). This is
+STRUCTURALLY DIFFERENT from the CAUSE/G1-G8 primary-cause block — same category
 vocabulary, different columns, different purpose.
-â†’ Direct mapping: CAUSE + G1-G8 sub-fields â†’ FAILURE_MODE (schema Â§2.2)
-â†’ Contributing Factors block (559-608) â†’ CAUSE_FACTOR (schema Â§2.3)
+→ Direct mapping: CAUSE + G1-G8 sub-fields → FAILURE_MODE (schema §2.2)
+→ Contributing Factors block (559-608) → CAUSE_FACTOR (schema §2.3)
 This is actually a CLEANER match to the schema's FAILURE_MODE/CAUSE_FACTOR split
-than gas distribution was â€” worth noting in the README as a point in favor of the
+than gas distribution was — worth noting in the README as a point in favor of the
 original schema design.
 
-### Equipment/asset fields â€” TWO columns, more granular than gas distribution
-- SYSTEM_PART_INVOLVED (104) â€” broad facility type. Confirmed full value list
+### Equipment/asset fields — TWO columns, more granular than gas distribution
+- SYSTEM_PART_INVOLVED (104) — broad facility type. Confirmed full value list
   (from PDF grep, A14): Belowground Storage (Including Associated Equipment and
   Piping) / Aboveground Storage (same) / Onshore Compressor Station Equipment
   and Piping / Onshore Regulator/Metering Station Equipment and Piping /
   Onshore Pipeline, Including Valve Sites / Offshore Platform, Including
   Platform-mounted Equipment and Piping / Offshore Pipeline, Including Riser
   and Riser Bend
-- ITEM_INVOLVED (105) â€” a SEPARATE, more granular field not present at all in
-  gas distribution's form. NOT YET CONFIRMED â€” value list needs a targeted grep,
-  this is likely the more precise EQUIPMENT-mapping field (matches the schema's
-  original generic "ITEM_INVOLVED" naming almost exactly)
-- ITEM_INVOLVED_DETAILS (143) â€” free text, presumably populates when ITEM_INVOLVED
+- ITEM_INVOLVED (105) — a SEPARATE, more granular field not present at all in
+  gas distribution's form. Full value list under "ITEM_INVOLVED — full value list"
+  below. This is the more precise EQUIPMENT-mapping field.
+- ITEM_INVOLVED_DETAILS (143) — free text, presumably populates when ITEM_INVOLVED
   is "Other"
-- PIPE_FACILITY_TYPE (103) â€” ownership category, same non-equipment role as
+- PIPE_FACILITY_TYPE (103) — ownership category, same non-equipment role as
   gas distribution's field of the same name, do not map to EQUIPMENT
 
-### Release/quantity fields â€” need per-column confirmation
-- UNINTENTIONAL_RELEASE (22), INTENTIONAL_RELEASE (23) â€” likely mcf, same as
-  distribution, but this form covers pipelines that can carry different gas
-  types â€” confirm unit isn't different for this commodity type before assuming
-- EST_COST_UNINTENTIONAL_RELEASE (171), EST_COST_INTENTIONAL_RELEASE (172) â€”
+### Release/quantity fields — unit NOT independently confirmed for this commodity
+- UNINTENTIONAL_RELEASE (22), INTENTIONAL_RELEASE (23) — ASSUMED mcf, same as
+  distribution (confirmed there). Not checked against this form's description;
+  this form covers pipelines that can carry different gas types, so confirm the
+  unit before converting or comparing volumes across the two gas commodities
+- EST_COST_UNINTENTIONAL_RELEASE (171), EST_COST_INTENTIONAL_RELEASE (172) —
   same cost pattern as distribution
 
-### ROOT_CAUSE â€” CONFIRMED SCOPE: excavation-damage only, NOT universal
-ROOT_CAUSE_CATEGORY (350), ROOT_CAUSE_TYPE (351) â€” Question 14, embedded inside
-the G3 Excavation Damage section. Only populates when CAUSE = G3. This DIFFERS
-from gas distribution, where ROOT_CAUSE/ROOT_CAUSE_CATEGORY/ROOT_CAUSE_TYPE
-applied universally regardless of CAUSE category (Part J, all causes).
-â†’ Practical effect: for gas_transmission_gathering, CAUSE_FACTOR weak-supervision
-  has two sources depending on category â€” ROOT_CAUSE fields for G3 rows, and the
+### ROOT_CAUSE_CATEGORY / ROOT_CAUSE_TYPE scope — CONFIRMED: excavation-damage only, NOT universal
+ROOT_CAUSE_CATEGORY (350), ROOT_CAUSE_TYPE (351) — Question 14, embedded inside
+the G3 Excavation Damage section. Only populates when CAUSE = G3. CORRECTED
+2026-10-06: an earlier version said gas distribution differed (universal, "Part J").
+Its column order says otherwise: ROOT_CAUSE_CATEGORY/TYPE (284-286) also sit inside
+its excavation block, and hazardous liquid's (385-387) do too. VERIFIED on the loaded
+data (2026-10-06): in all three commodities the field is filled for 98-99% of EXCAVATION DAMAGE rows
+(549 / 223 / 199 rows) and for none of the other CAUSE values.
+→ Practical effect: for gas_transmission_gathering, CAUSE_FACTOR weak-supervision
+  has two sources depending on category — ROOT_CAUSE fields for G3 rows, and the
   Contributing Factors block (columns 559-608) for everything else. Don't apply
-  the ROOT_CAUSE fields uniformly across all rows for this commodity â€” check CAUSE
+  the ROOT_CAUSE fields uniformly across all rows for this commodity — check CAUSE
   first, or you'll get a column full of nulls for 7 of the 8 categories and wrongly
   read that as "root cause rarely reported" when it's actually "not applicable."
 
@@ -1360,21 +1384,21 @@ ROOT_CAUSE_TYPE values seen (partial, Notification Issue category):
 - Excavator dug prior to valid start date/time
 - Excavator dug after valid ticket expired
 - Excavator provided incorrect notification information
-(list continues under further categories â€” Excavation Issue category starts at
-line 1493 â€” not fully captured, low priority unless CAUSE=G3 rows turn out to be
+(list continues under further categories — Excavation Issue category starts at
+line 1493 — not fully captured, low priority unless CAUSE=G3 rows turn out to be
 a large share of your annotated sample)
 
-### Encoding â€” CONFIRMED: cp1252 (independently verified, not assumed from gas_distribution)
-utf-8 fails on byte 0x94 (cp1252 right-double-quote) â€” consistent pattern with
+### Encoding — CONFIRMED: cp1252 (independently verified, not assumed from gas_distribution)
+utf-8 fails on byte 0x94 (cp1252 right-double-quote) — consistent pattern with
 gas_distribution's cp1252 confirmation, both commodities from the same PHMSA
 export pipeline use the same encoding, as expected.
 
-### ITEM_INVOLVED â€” full value list (Part C, Question 3, "Item involved in Incident")
-- Pipe (â†’ PIPE_TYPE: Pipe Body / Pipe Seam)
-- Weld/Fusion, including heat-affected zone (â†’ WELD_SUBTYPE: Pipe Girth Weld /
+### ITEM_INVOLVED — full value list (Part C, Question 3, "Item involved in Incident")
+- Pipe (→ PIPE_TYPE: Pipe Body / Pipe Seam)
+- Weld/Fusion, including heat-affected zone (→ WELD_SUBTYPE: Pipe Girth Weld /
   Pipe Plastic Fusion / Other Butt Weld / Fillet Weld)
-- Valve, excluding Regulator/Control Valves (â†’ VALVE_TYPE: Mainline / Relief
-  Valve / Auxiliary or Other Valve; if Mainline â†’ VALVE_MAINLINE_TYPE:
+- Valve, excluding Regulator/Control Valves (→ VALVE_TYPE: Mainline / Relief
+  Valve / Auxiliary or Other Valve; if Mainline → VALVE_MAINLINE_TYPE:
   Butterfly / Check / Gate / Plug / Ball / Globe / Other)
 - Compressor, including auxiliary piping, connections, valves, and equipment
   (excludes product drain lines and tubing)
@@ -1394,7 +1418,7 @@ export pipeline use the same encoding, as expected.
 - Flange Assembly, including Gaskets
 - ESD System, including auxiliary piping, connections, valves, and equipment
 - Drain Lines
-- Tubing, including Fittings (â†’ TUBING_MATERIAL: Stainless steel / Carbon
+- Tubing, including Fittings (→ TUBING_MATERIAL: Stainless steel / Carbon
   steel / Copper / Other; TUBING_TYPE: Rigid / Flexible)
 - Instrumentation, including Programmable Logic Controllers and Controls
 - Underground Gas Storage or Cavern
@@ -1404,10 +1428,10 @@ Companion fields regardless of which item selected:
 - INSTALLATION_YEAR (C4)
 - MANUFACTURED_YEAR (C5)
 
-### RELEASE_TYPE â€” value list (Part C, Question 6)
-- Mechanical Puncture (â†’ PUNCTURE_AXIAL, PUNCTURE_CIRCUM â€” size in inches)
-- Leak (â†’ LEAK_TYPE: Pinhole / Crack / Connection Failure / Seal or Packing / Other)
-- Rupture (â†’ RUPTURE_ORIENT: Circumferential / Longitudinal / Other;
+### RELEASE_TYPE — value list (Part C, Question 6)
+- Mechanical Puncture (→ PUNCTURE_AXIAL, PUNCTURE_CIRCUM — size in inches)
+- Leak (→ LEAK_TYPE: Pinhole / Crack / Connection Failure / Seal or Packing / Other)
+- Rupture (→ RUPTURE_ORIENT: Circumferential / Longitudinal / Other;
   RUPTURE_LENGTH, RUPTURE_WIDTH)
 - Other (free text: RELEASE_TYPE_DETAILS)
 
@@ -2070,66 +2094,65 @@ Hazardous Liquid Accident PHMSA F7000 1 Rev 3-2021 Data fields.pdf
 ## hazardous_liquid
 
 ### Core columns
-- Narrative text column: NARRATIVE (Part H, line 2460)
-- Delimiter: \t â€” encoding: not yet confirmed, run the same three-way test
-- File is notably larger (18MB vs ~7MB gas distribution) â€” more rows and/or
-  longer average narratives; worth checking row count before annotation
-  sampling in Phase 2
+- Narrative text column: NARRATIVE (column 648)
+- Delimiter: \t (tab)
+- Encoding: cp1252 (confirmed, see "Encoding" below)
+- File is notably larger (18MB vs ~7MB gas distribution): 6,009 rows vs 1,592 for
+  gas distribution (row counts from the loaded files)
 
-### Cause structure â€” SAME field names as gas transmission & gathering
+### Cause structure — SAME field names as gas transmission & gathering
 - CAUSE, CAUSE_DETAILS (Part G, apparent cause)
 - G1 Corrosion: INTERNAL_EXTERNAL, then the identical GALVANIC_CORROSION_IND /
-  INT_* internal set â€” reuse gas_transmission_gathering's G1 mapping directly,
+  INT_* internal set — reuse gas_transmission_gathering's G1 mapping directly,
   field names match
-- G5 "Material Failure of Pipe or Weld" â€” NOTE THE CATEGORY NAME CHANGE: gas
-  transmission called this same slot "Pipe, Weld, or Joint Failure"
-  (PWJF_FAILURE_TYPE). Confirm whether hazardous liquid's G5 uses a different
-  field name (this grep only shows the prose label, not yet the field code â€”
-  needs a follow-up grep, see below)
+- G5 "Material Failure of Pipe or Weld". Category name, verified from the CAUSE column of the
+  loaded data (2026-10-06): hazardous liquid AND gas transmission and gathering both use
+  "MATERIAL FAILURE OF PIPE OR WELD"; only gas distribution says "PIPE, WELD, OR JOINT FAILURE".
+  (An earlier version said gas transmission used the gas distribution wording; that was wrong.)
+  Confirm whether hazardous liquid's G5 uses a different
+  field name (this grep only showed the prose label). Update: this form has NO
+  PWJF_FAILURE_TYPE column. By column position the G5 block is most likely
+  FAILURE_TYPE (422) through ADDITIONAL_LACK_FUSION_IND (436), with
+  ADDITIONAL_ARC_BURN_IND at 434; inferred from column order, not confirmed in the PDF)
 - Same "conditional on ITEM_INVOLVED = Pipe or Weld" structure at line 1453,
   matching gas transmission's line 1989 pattern almost verbatim (same 4
   triggering causes: Corrosion G1, Excavation G3, Mechanical Damage G4,
   Material Failure G5)
-- Contributing Factors (Part K, line 1755) â€” same EXTRNL_COR_*/PWF_* pattern
+- Contributing Factors (Part K, line 1755) — same EXTRNL_COR_*/PWF_* pattern
   as the other two commodities, same structural split from the primary
   CAUSE/G1-G8 block
 
-### Equipment field â€” CONFIRMED, matches gas transmission's structure closely
-- ITEM_INVOLVED (Part C, Question 3) â€” "Item involved in Accident"
-- First confirmed option: Pipe (â†’ PIPE_TYPE: Pipe Body / Pipe Seam), with the
+### Equipment field — CONFIRMED, matches gas transmission's structure closely
+- ITEM_INVOLVED (Part C, Question 3) — "Item involved in Accident"
+- First confirmed option: Pipe (→ PIPE_TYPE: Pipe Body / Pipe Seam), with the
   same C3a-C3g detail cascade (PIPE_DIAMETER, PIPE_WALL_THICKNESS, PIPE_SMYS,
   PIPE_SPECIFICATION, PIPE_SEAM_TYPE) as gas transmission's Pipe option
-- ITEM_INVOLVED_DETAILS â€” free text, "Other" companion field (line 402, mostly
-  garbled â€” same column-extraction issue as before, but the field name and
+- ITEM_INVOLVED_DETAILS — free text, "Other" companion field (line 402, mostly
+  garbled — same column-extraction issue as before, but the field name and
   role are clear from context)
-- Full value list NOT yet confirmed â€” only "Pipe" is visible in this grep.
-  Given the structural match to gas transmission, likely candidates by analogy:
-  Weld/Fusion, Valve, and hazardous-liquid-specific items (Tank, Pump,
-  Manifold â€” this commodity has above-ground storage/pump infrastructure gas
-  pipelines don't) â€” DO NOT ASSUME, confirm via PDF screenshot same as before
+- Full value list: see "ITEM_INVOLVED — full value list" below (confirmed complete).
 
 ### Release/quantity fields
-- RELEASE_TYPE (C6, "Type of Accident involved") â€” same Mechanical
+- RELEASE_TYPE (C6, "Type of Accident involved") — same Mechanical
   Puncture/Leak/Rupture/Other structure as gas transmission's RELEASE_TYPE
-- Release volume field name NOT yet confirmed â€” this is the one flagged in
-  Phase 0.2 as needing independent verification (barrels, not mcf, expected
-  for this commodity) â€” needs its own grep, not yet run
+- Release volume field: UNINTENTIONAL_RELEASE_BBLS, in barrels (confirmed, see
+  "Release/quantity fields — CONFIRMED" below)
   
-### ITEM_INVOLVED â€” full value list (Part C, Question 3), CONFIRMED COMPLETE
-- Pipe (â†’ PIPE_TYPE: Pipe Body / Pipe Seam)
-- Weld, including heat-affected zone (â†’ WELD_SUBTYPE: Pipe Girth Weld /
-  Other Butt Weld / Fillet Weld â€” no Plastic Fusion, unlike gas transmission)
-- Valve (â†’ VALVE_TYPE: Mainline / Relief Valve / Auxiliary or Other Valve;
-  if Mainline â†’ VALVE_MAINLINE_TYPE: Butterfly / Check / Gate / Plug / Ball /
+### ITEM_INVOLVED — full value list (Part C, Question 3), CONFIRMED COMPLETE
+- Pipe (→ PIPE_TYPE: Pipe Body / Pipe Seam)
+- Weld, including heat-affected zone (→ WELD_SUBTYPE: Pipe Girth Weld /
+  Other Butt Weld / Fillet Weld — no Plastic Fusion, unlike gas transmission)
+- Valve (→ VALVE_TYPE: Mainline / Relief Valve / Auxiliary or Other Valve;
+  if Mainline → VALVE_MAINLINE_TYPE: Butterfly / Check / Gate / Plug / Ball /
   Globe / Other. NOTE: Relief Valve and Auxiliary Valve have explicit
-  routing instructions â€” "Report tank relief valves under Tank/Vessel,
+  routing instructions — "Report tank relief valves under Tank/Vessel,
   Relief Valve" and "report auxiliary valves on tanks under Tank/Vessel,
-  Appurtenance" â€” meaning some valve-on-tank incidents get coded under
+  Appurtenance" — meaning some valve-on-tank incidents get coded under
   Tank/Vessel instead of Valve; keep this in mind for gazetteer matching,
   since narrative text mentioning "valve" could map to either entity
   depending on context)
 - Pump, including auxiliary piping, connections, and equipment (excludes
-  drain lines/tubing) â€” (â†’ PUMP_TYPE: Positive displacement / Centrifugal /
+  drain lines/tubing) — (→ PUMP_TYPE: Positive displacement / Centrifugal /
   Gear / Other; PUMP_SERVICE_TYPE: Mainline / Injection / Truck rack / Other)
 - Meter/Prover, including auxiliary piping, connections, and equipment
 - Scraper/Pig Trap, including auxiliary piping, connections, and equipment
@@ -2141,13 +2164,13 @@ Hazardous Liquid Accident PHMSA F7000 1 Rev 3-2021 Data fields.pdf
 - Flange Assembly, including Gaskets
 - Relief Lines and Relief Equipment
 - Drain Lines
-- Tubing, including Fittings (â†’ TUBING_MATERIAL: Stainless steel / Carbon
+- Tubing, including Fittings (→ TUBING_MATERIAL: Stainless steel / Carbon
   steel / Copper / Other; TUBING_TYPE: Rigid / Flexible)
 - Instrumentation, including Programmable Logic Controllers and Controls
-- Tank/Vessel (â†’ TANK_VESSEL_SUBTYPE: Single Bottom System / Double Bottom
+- Tank/Vessel (→ TANK_VESSEL_SUBTYPE: Single Bottom System / Double Bottom
   System / Tank Shell / Chime / Roof/Roof Seal / Roof Drain System / Mixer /
   Pressure Vessel Head or Wall / Appurtenance / Relief Valve / Other;
-  TANK_TYPE: Atmospheric / Pressurized â€” with extensive follow-up on max
+  TANK_TYPE: Atmospheric / Pressurized — with extensive follow-up on max
   pressure, relief valve activation, MOP exceedance, safe-fill-level, and
   API Std 653 inspection history for atmospheric tanks)
 - Other (free text: ITEM_INVOLVED_DETAILS)
@@ -2177,25 +2200,69 @@ two "coarse" fields, while structurally parallel, are NOT interchangeable
 vocabulary across commodities — don't merge them into one shared gazetteer list,
 keep them commodity-tagged same as everything else.
 
-### Release/quantity fields â€” CONFIRMED, barrels not mcf (as expected)
-- UNINTENTIONAL_RELEASE_BBLS (A7) â€” "Estimated volume of commodity released
+### Release/quantity fields — CONFIRMED, barrels not mcf (as expected)
+- UNINTENTIONAL_RELEASE_BBLS (A7) — "Estimated volume of commodity released
   unintentionally", unit: Barrels
-- INTENTIONAL_RELEASE_BBLS (A8) â€” controlled/blowdown release, Barrels
-  (note: "only reported for HVL and CO2 Commodities" â€” conditional field,
+- INTENTIONAL_RELEASE_BBLS (A8) — controlled/blowdown release, Barrels
+  (note: "only reported for HVL and CO2 Commodities" — conditional field,
   won't populate for standard crude/refined product releases)
-- RECOVERED_BBLS (A9) â€” volume of commodity recovered, Barrels â€” NEW FIELD,
+- RECOVERED_BBLS (A9) — volume of commodity recovered, Barrels — NEW FIELD,
   no equivalent in either gas commodity form, makes sense for liquid (you can
   recover spilled liquid, not released gas)
-- CONSUMED_BY_FIRE_IN_BARRELS (A22c) â€” volume consumed by fire, Barrels
-- REL_WATER_BBLS (D5b) â€” "Estimated amount released in or reaching water",
-  Barrels â€” another liquid-specific field (water contamination is a distinct,
-  major HL concern; no gas equivalent)
-- COULD_BE_HCA (D6), COMMODITY_REACHED_HCA (D7) â€” High Consequence Area
+- CONSUMED_BY_FIRE_IN_BARRELS (A22c) — volume consumed by fire, Barrels
+- AMOUNT_RELEASED (D5b, column 199) — "Estimated amount released in or reaching
+  water", Barrels — another liquid-specific field (water contamination is a
+  distinct, major HL concern; no gas equivalent). CORRECTED 2026-10-06: an earlier
+  version called this REL_WATER_BBLS; no such column exists in the raw list. The
+  match to AMOUNT_RELEASED is inferred from its position (after
+  PUBLIC_WATER_CONTAM_IND, before REL_WATER_NAME), not confirmed in the PDF.
+- COULD_BE_HCA (D6), COMMODITY_REACHED_HCA (D7) — High Consequence Area
   flags, relevant to severity/consequence classification (Phase 6) beyond
   just the fatality/injury/ignite/explode indicators already in the schema
 
 
-### Encoding â€” CONFIRMED: cp1252
-utf-8 fails on byte 0x96 (cp1252 en-dash) â€” same pattern as the other two
+### Encoding — CONFIRMED: cp1252
+utf-8 fails on byte 0x96 (cp1252 en-dash) — same pattern as the other two
 commodities, all three PHMSA exports use cp1252 consistently.
 
+## Corrections log (2026-10-06)
+
+**Repaired:** 148 lines contained garbled characters (UTF-8 text that had been decoded as cp1252, e.g.
+dashes and arrows). They were restored.
+
+**Wrong column names corrected** (checked against each commodity's own numbered list):
+- `PARTY_TYPE` does not exist. The excavation party column is `EX_PARTY_TYPE` in all three commodities
+  (243 / 313 / 348).
+- Gas distribution's pipe, weld or joint block is `PWJF_FAILURE_TYPE` (321) through
+  `ADDITIONAL_LACK_FUSION_IND` (354), the same structure as gas transmission. It is not an
+  `ADDITIONAL_ARC` / `ADDITIONAL_LACK_FUSION` pair; the real names are `ADDITIONAL_ARC_BURN_IND` and
+  `ADDITIONAL_LACK_FUSION_IND`.
+- `CORROSION_INHIBITOR` is `CORROSION_INHIBITORS` (225).
+- There is no bare `ROOT_CAUSE` column. The columns are `ROOT_CAUSE_CATEGORY`, `ROOT_CAUSE_TYPE` and
+  `ROOT_CAUSE_TYPE_OTHER`.
+- `REL_WATER_BBLS` does not exist in the hazardous liquid list. The amount released in or reaching water is
+  most likely `AMOUNT_RELEASED` (199), inferred from its position.
+
+**Claim corrected:** the root cause columns were described as universal in gas distribution. In all three
+commodities they sit inside the excavation-damage block, and the loaded data confirms it: they are filled
+for 98-99% of excavation rows and for none of the others.
+
+**Stale items updated:** encoding for gas transmission and hazardous liquid, the `ITEM_INVOLVED` value
+list, the hazardous liquid equipment value list, the hazardous liquid release volume field, row counts,
+and the gas distribution equipment column (`SYSTEM_PART_INVOLVED`; that form has no `ITEM_INVOLVED`).
+
+**Verified from the loaded data (CAUSE column, 2026-10-06):** each commodity has exactly 8 CAUSE values.
+Gas distribution: CORROSION FAILURE, EQUIPMENT FAILURE, EXCAVATION DAMAGE, INCORRECT OPERATION,
+NATURAL FORCE DAMAGE, OTHER INCIDENT CAUSE, OTHER OUTSIDE FORCE DAMAGE, PIPE, WELD, OR JOINT FAILURE.
+Gas transmission and gathering: the same, except MATERIAL FAILURE OF PIPE OR WELD replaces the pipe, weld
+or joint value. Hazardous liquid: the same as gas transmission, except OTHER ACCIDENT CAUSE replaces
+OTHER INCIDENT CAUSE.
+
+**Plan versus build:** the notes name planned weak-supervision sources for `CAUSE_FACTOR` and `PARTY_ROLE`.
+No gazetteer was built for either type; both were annotated by hand.
+
+**Still unconfirmed:**
+- Gas transmission and gathering release unit (assumed mcf, as in gas distribution).
+- Hazardous liquid's pipe, weld or joint block (probably `FAILURE_TYPE` at 422, inferred from position).
+- `AMOUNT_RELEASED` being the water-release volume (inferred from position).
+- Gas distribution's encoding rests on one failing byte (0x91); all three files loaded as cp1252.

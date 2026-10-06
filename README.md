@@ -4,7 +4,7 @@
 
 Built on public incident reports from the U.S. Pipeline and Hazardous Materials Safety Administration (PHMSA): gas distribution, gas transmission and gathering, and hazardous liquid pipelines, January 2010 to present (9,654 reports).
 
-- **Live demo:** [`Streamlit app`](https://nlp-on-oil-and-gas-unstructured-data.streamlit.app/) (free hosting: the app sleeps when idle, so the first load can be slow)
+- **Live demo:** [REPLACE_WITH_YOUR_STREAMLIT_URL](REPLACE_WITH_YOUR_STREAMLIT_URL) (free hosting: the app sleeps when idle, so the first load can be slow)
 - **Model weights:** [`Chinonso11/phmsa-incident-models`](https://huggingface.co/Chinonso11/phmsa-incident-models) on the Hugging Face Hub (two DistilBERT models, public)
 - **Code and full engineering log:** this repository
 
@@ -220,14 +220,30 @@ The exact order of scripts used to produce every artifact is listed in [How to r
 | Hazardous liquid | `accident_hazardous_liquid_jan2010_present.txt` | 6,009 |
 | **Total** | | **9,654** |
 
-Each row is one incident report with many structured columns plus a free-text narrative. The files are delimited text in **cp1252** encoding (not UTF-8). Narratives are almost entirely upper-case.
+Each row is one incident report with many structured columns plus a free-text narrative. The files are tab-delimited text in **cp1252** encoding (not UTF-8). Narratives are almost entirely upper-case.
 
 **Why I audited columns before writing any model code.** The three commodities do not share a schema. I wrote the findings into `data/field_notes.md` with confirmed column names so that every later gazetteer rests on a field I had actually inspected:
 
 - **Cause taxonomy is not a flat CAUSE/SUBCAUSE pair.** It branches into eight cause groups (G1 to G8) per commodity, and each group has its own detail fields (equipment failure type, natural force type, party type, and so on). This is why the failure-mode gazetteer is organized into 24 source groups instead of one list.
 - **Equipment fields differ.** Gas distribution has only a coarse `SYSTEM_PART_INVOLVED`. Gas transmission and hazardous liquid have both the coarse field and a granular `ITEM_INVOLVED`. So equipment patterns come from 8 source groups with different coverage per commodity.
-- **`ROOT_CAUSE` / `ROOT_CAUSE_CATEGORY` are excavation-only in gas transmission**, but universal in distribution. They cannot be treated as a general cause label.
-- **Units differ.** Gas volumes are in mcf (`UNINTENTIONAL_RELEASE`, `INTENTIONAL_RELEASE`); hazardous liquid volumes are in barrels (`UNINTENTIONAL_RELEASE_BBLS`, `RECOVERED_BBLS`, `REL_WATER_BBLS`). The quantity matcher therefore distinguishes gas volume from liquid volume.
+- **`ROOT_CAUSE_CATEGORY` and `ROOT_CAUSE_TYPE` come from the excavation-damage section**, so they cannot be treated as a general cause label. Checked on the loaded data in all three commodities: the field is filled for 98 to 99% of excavation-damage reports and for none of the others. (The first version of the field notes called it universal in gas distribution; that was wrong.)
+- **Units differ.** Gas volumes are in mcf (`UNINTENTIONAL_RELEASE`, `INTENTIONAL_RELEASE`; confirmed for gas distribution, assumed the same for gas transmission and gathering); hazardous liquid volumes are in barrels (`UNINTENTIONAL_RELEASE_BBLS`, `RECOVERED_BBLS`). The quantity matcher therefore distinguishes gas volume from liquid volume.
+
+**The cause mix differs sharply by commodity** (counts of reports per value of the `CAUSE` column, from the loaded data; the three counts per row add up to the file row counts above):
+
+| Cause category | Gas distribution | Gas transmission and gathering | Hazardous liquid |
+|---|---|---|---|
+| Corrosion failure | 39 | 406 | 1,318 |
+| Equipment failure | 62 | 702 | 2,740 |
+| Excavation damage | 549 | 223 | 199 |
+| Incorrect operation | 116 | 138 | 832 |
+| Natural force damage | 113 | 155 | 263 |
+| Other outside force damage | 481 | 115 | 125 |
+| Pipe, weld or joint failure (gas distribution wording) / material failure of pipe or weld (the other two) | 102 | 221 | 405 |
+| Other incident cause (hazardous liquid: other accident cause) | 130 | 93 | 127 |
+| **Total** | **1,592** | **2,053** | **6,009** |
+
+Excavation damage is 34% of gas distribution reports but 3% of hazardous liquid, where equipment failure alone is 46%. This is one reason results are reported per commodity as well as overall.
 
 **Combined file.** `data/processed/phmsa_combined_raw.parquet` holds all 9,654 rows with a `commodity_type` column. Writing it first failed with a pyarrow mixed-type error (columns holding both numbers and text), so every object column is forced to string before saving.
 
