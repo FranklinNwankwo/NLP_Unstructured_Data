@@ -1,6 +1,14 @@
 ﻿venv/
+label-studio-venv/
 data/raw/
 data/processed/*.parquet
+data/processed/*.json
+data/processed/*.spacy
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+ner_model/phmsa_ner_model/
+ner_model/*.zip
+severity_model/phmsa_severity_model/
+severity_model/*.zip
+baselines/spacy_model/

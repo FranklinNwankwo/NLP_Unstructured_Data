@@ -8,4 +8,5 @@ scikit-learn>=1.5
 boto3>=1.34
 label-studio
 streamlit>=1.38
-spacy-streamlit>=1.0.6
+spacy-streamlit>=1.0.6torch
+torch

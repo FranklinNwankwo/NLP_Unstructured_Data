@@ -1,0 +1,17 @@
+<View>
+  <Labels name="label" toName="text">
+    <Label value="EQUIPMENT" background="#3498db"/>
+    <Label value="FAILURE_MODE" background="#e74c3c"/>
+    <Label value="CAUSE_FACTOR" background="#c0392b"/>
+    <Label value="ACTION_TAKEN" background="#2ecc71"/>
+    <Label value="CONSEQUENCE" background="#e67e22"/>
+    <Label value="QUANTITY" background="#9b59b6"/>
+    <Label value="LOCATION" background="#1abc9c"/>
+    <Label value="DATE_TIME" background="#34495e"/>
+    <Label value="MATERIAL_SPEC" background="#f1c40f"/>
+    <Label value="INSPECTION_FINDING" background="#95a5a6"/>
+    <Label value="PARTY_ROLE" background="#d35400"/>
+    <Label value="REGULATORY_REF" background="#7f8c8d"/>
+  </Labels>
+  <Text name="text" value="$text"/>
+</View>
