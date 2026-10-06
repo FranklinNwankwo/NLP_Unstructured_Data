@@ -4,7 +4,7 @@
 
 Built on public incident reports from the U.S. Pipeline and Hazardous Materials Safety Administration (PHMSA): gas distribution, gas transmission and gathering, and hazardous liquid pipelines, January 2010 to present (9,654 reports).
 
-- **Live demo:** [REPLACE_WITH_YOUR_STREAMLIT_URL](REPLACE_WITH_YOUR_STREAMLIT_URL) (free hosting: the app sleeps when idle, so the first load can be slow)
+- **Live demo:** [`Streamlit app`](https://nlp-on-oil-and-gas-unstructured-data.streamlit.app/) (free hosting: the app sleeps when idle, so the first load can be slow)
 - **Model weights:** [`Chinonso11/phmsa-incident-models`](https://huggingface.co/Chinonso11/phmsa-incident-models) on the Hugging Face Hub (two DistilBERT models, public)
 - **Code and full engineering log:** this repository
 
