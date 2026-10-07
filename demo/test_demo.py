@@ -54,14 +54,36 @@ rec = {"entities": ents + [{"text": "SPILL", "label": "CONSEQUENCE", "start": 30
                       "head": {"text": "A", "label": "CAUSE_FACTOR"}, "tail": {"text": "B", "label": "PARTY_ROLE"}}]}
 rdf = relations_dataframe(rec)
 check("relations table: columns and measured counts",
-      list(rdf.columns) == ["Relation", "From", "To", "Sentence", "Hand-checked"]
-      and rdf.loc[0, "Hand-checked"] == "11 of 15 correct" and rdf.loc[0, "To"] == "2 BARRELS (volume_liquid)"
-      and rdf.loc[1, "Hand-checked"] == "not measured" and rdf.loc[0, "Sentence"] == 1)
+      list(rdf.columns) == ["Relation", "From", "To", "Sentence", "Sample review"]
+      and rdf.loc[0, "Sample review"] == "11 of 15 correct" and rdf.loc[0, "To"] == "2 BARRELS (volume_liquid)"
+      and rdf.loc[1, "Sample review"] == "not measured" and rdf.loc[0, "Sentence"] == 1)
 edf = entities_dataframe(rec)
 check("entities table: duplicates are counted", int(edf.loc[edf["Text"] == "SPILL", "Count"].iloc[0]) == 2)
 check("entities table: empty record gives an empty table", entities_dataframe({"entities": []}).empty)
 check("measured counts match the precision check (61 of 90)", sum(c for c, _ in RELATION_PRECISION.values()) == 61
       and sum(n for _, n in RELATION_PRECISION.values()) == 90)
+
+# ---- 1b. visual helpers -----------------------------------------------------
+from ui_helpers import (SEVERITY_ORDER, accuracy_cards_html, entity_guide_html, hero_html,
+                        probability_bars_html, relation_cards_html, severity_badge_html,
+                        stat_cards_html, step_html)
+
+check("severity badge: label uppercased for every level", all(l.upper() in severity_badge_html(l) for l in SEVERITY_ORDER))
+bars = probability_bars_html({"minor": 0.1, "moderate": 0.7, "severe": 0.15, "critical": 0.05})
+check("probability bars: four rows, widths match, top class bold",
+      bars.count("width:70.0%") == 1 and bars.count("font-weight:700") == 1 and all(k in bars for k in SEVERITY_ORDER))
+cards = relation_cards_html({"relations": [{"type": "LOCATED_AT", "confidence": "rule", "sentence_index": 0,
+                                            "head": {"text": "A <b> & $5", "label": "EQUIPMENT"},
+                                            "tail": {"text": "X", "label": "LOCATION"}}]})
+check("relation cards: escaped, $ cannot start LaTeX, measured count shown",
+      "<b>" not in cards and "&#36;5" in cards and "13 of 15 correct" in cards)
+check("relation cards: empty string when there are no relations", relation_cards_html({"relations": []}) == "")
+check("legend with counts shows how many of each",
+      "EQUIPMENT · 2" in legend_html([{"label": "EQUIPMENT"}, {"label": "EQUIPMENT"}], with_counts=True))
+blocks = [hero_html(), step_html(2, "x"), stat_cards_html([("A", 1)]), severity_badge_html("minor"), bars, cards,
+          accuracy_cards_html(), entity_guide_html(), h]
+check("HTML blocks have no blank line (it would end the block in Streamlit markdown)",
+      all("\n\n" not in b for b in blocks))
 
 # ---- 2. the Space folder ---------------------------------------------------
 needed = ["app.py", "ui_helpers.py", "requirements.txt", "Dockerfile", "README.md", "incident_extractor.py",
