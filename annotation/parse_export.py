@@ -20,7 +20,7 @@ for task in raw:
         skipped_unannotated += 1
         continue
 
-    # Use the first completed annotation (there should be exactly one,
+    # Using the first completed annotation (there is exactly one,
     # since this was a single-annotator pass)
     result = annotations[0]["result"]
     entities = []

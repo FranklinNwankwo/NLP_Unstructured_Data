@@ -42,7 +42,6 @@ def apply(df):
     df["num_entities"] = [len(k) for k in new_ents]
     return df, changed
 
-
 for name in ["annotated_sentences", "ner_train", "ner_test"]:
     path = Path(f"data/processed/{name}.parquet")
     backup = path.with_name(f"{name}_v1.parquet")
