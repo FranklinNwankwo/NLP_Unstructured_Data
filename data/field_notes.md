@@ -495,8 +495,7 @@ incident_gas_distribution_jan2010_present.txt
 Top-level field: CAUSE (Part G, apparent cause) — selects ONE of 8 categories.
 Companion field: CAUSE_DETAILS
 
-Category-specific sub-fields (only one set populates per row, depending on which
-CAUSE category was selected):
+Category-specific sub-fields (only one set populates per row, depending on which CAUSE category was selected):
 
 | CAUSE category | Sub-cause field(s) that populate for this category |
 |---|---|
@@ -1287,9 +1286,6 @@ incident_gas_transmission_gathering_jan2010_present.zip
 621: NARRATIVE
 622: 
 623: 
-
-
-## gas_transmission_gathering
 
 ### Core columns
 - Narrative text column: NARRATIVE (column 621)
@@ -2090,8 +2086,6 @@ Hazardous Liquid Accident PHMSA F7000 1 Rev 3-2021 Data fields.pdf
 646: AUTHORIZER_TITLE
 647: AUTHORIZER_EMAIL
 648: NARRATIVE
-
-## hazardous_liquid
 
 ### Core columns
 - Narrative text column: NARRATIVE (column 648)

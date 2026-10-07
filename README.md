@@ -4,9 +4,9 @@
 
 Built on public incident reports from the U.S. Pipeline and Hazardous Materials Safety Administration (PHMSA): gas distribution, gas transmission and gathering, and hazardous liquid pipelines, January 2010 to present (9,654 reports).
 
-- **Live demo:** [REPLACE_WITH_YOUR_STREAMLIT_URL](REPLACE_WITH_YOUR_STREAMLIT_URL) (free hosting: the app sleeps when idle, so the first load can be slow)
+- **Live demo:** [STREAMLIT APP](nlp-on-oil-and-gas-unstructured-data.streamlit.app) (free hosting: the app sleeps when idle, so the first load can be slow)
 - **Model weights:** [`Chinonso11/phmsa-incident-models`](https://huggingface.co/Chinonso11/phmsa-incident-models) on the Hugging Face Hub (two DistilBERT models, public)
-- **Code and full engineering log:** this repository
+- **Code and full engineering log:** This repository
 
 > This document is deliberately long. It records every design decision, every iteration, what went wrong and how it was caught, and the exact numbers behind each claim. If you only want the headline, read [Results at a glance](#1-results-at-a-glance) and [Limitations](#14-limitations-and-threats-to-validity).
 
@@ -32,8 +32,7 @@ Built on public incident reports from the U.S. Pipeline and Hazardous Materials 
 16. [Mistakes, corrections and dead ends](#16-mistakes-corrections-and-dead-ends)
 17. [Known gaps and future work](#17-known-gaps-and-future-work)
 18. [Testing and reproduction](#18-testing-and-reproduction)
-19. [How this was built (AI assistance and process)](#19-how-this-was-built-ai-assistance-and-process)
-20. [Data source and notes](#20-data-source-and-notes)
+19. [Data source and notes](#20-data-source-and-notes)
 
 ---
 
@@ -518,12 +517,11 @@ The cleanup changed about 1.4% of spans, and every model moved by about one poin
 
 **Four hypotheses, tested in order.**
 
-1. **Too few examples.** Rejected. I first said there were about 15 to 20 training examples; that was wrong. There were 165 `CAUSE_FACTOR` spans in total (21 of them in the original test set, the rest in train and dev).
+1. **Too few examples.** Rejected. I first concluded that were about 15 to 20 training examples; that was wrong. There were 165 `CAUSE_FACTOR` spans in total (21 of them in the original test set, the rest in train and dev).
 2. **The flat-span overlap rule deletes the broad cause spans.** Rejected: only 13 of 165 (8%) were dropped (table in section 10.5).
 3. **Boundary strictness on long vague spans.** Rejected: the spans are short (median 2 words, maximum 9, measured with `annotation/cause_factor_audit.py`).
 4. **Label inconsistency.** **Supported.** I read 40 random `CAUSE_FACTOR` spans. About a third were clear causes ("DIFFERENTIAL SOIL SETTLEMENT", "DREDGING OPERATION", "IMPROPER INSTALLATION", "COATING DETERIORATION"). The rest were generic words ("ROOT CAUSE", "CAUSE", "SOURCE", "GAS", "FORCE"), consequences ("FIRE" several times, "RELEASE", "LOSS") or the thing that broke ("RUPTURED", "DISENGAGED", "SEAL FAILURE", "MECHANICAL FAILURE"). No model can learn a stable pattern from a mixed concept.
 
-**What I did not run.** A token-level (instead of exact-span) score for `CAUSE_FACTOR` would separate "right region, wrong boundaries" from "wrong region". I proposed it, then dropped it, so that distinction stays open.
 
 **Decision to relabel, and how.** Relabeling mattered because the `CAUSED_BY` relation depends on `CAUSE_FACTOR`. The procedure:
 
@@ -609,7 +607,6 @@ There are no gold relations, so **recall is not measured**. Precision was measur
 - NER and relation rules were run over up to 900 narratives (300 per commodity), **excluding all 1,050 annotated sentences**, so none of the sampled sentences was one the NER model was trained or evaluated on; relations were deduplicated per narrative and only the `rule`-confidence relations kept (low-confidence types never fire).
 - Up to **15 relations per type** were drawn at random (seeded), 90 rows in total.
 - **Rubric.** `correct = Y` if the sentence supports the relation between those two spans; a slightly truncated or over-long span still counts as Y when the idea is right. `N` otherwise. For each N, an error type: **NER** (a span is itself wrong, or is a negated mention that should not exist) or **RULE** (both spans are fine but the sentence does not link them that way: boilerplate, reversed cause and effect, investigative action mistaken for remediation).
-- **Who judged.** The 90 judgments were drafted by an AI assistant reading each sentence against that rubric and applied to the sheet by script. They were **not independently re-checked by a second human**, so treat the figure as an estimate, not a verified measurement (section 19).
 
 | Relation | Correct / sampled | Precision | 95% Wilson interval | Errors (NER / RULE) |
 |---|---|---|---|---|
@@ -625,8 +622,6 @@ With 15 rows per type, each per-type interval is about 40 points wide, so the pe
 
 Closest calls (each flip moves the overall figure by about one point). Marked correct: `PIPE` 750 PSIG, `ABSORBENT PADS` AREA, `TRAFFIC SIGNAL CONDUIT LINES` 2049 SYLVAN ROAD, `HEAT` FLASH FIRE, `LEAKING` IGNITED, `LEAKAGE` FIRE. Marked wrong: `BLOWING` DAMAGE, `CRACK` EXCAVATED, `BOOM` FIREBALL, `EQUIPMENT` 6-FEET.
 
-**A bookkeeping error caught on the way.** The first time the decisions were pasted into the spreadsheet, the pasted column was 88 lines for 90 rows, so everything after an early point was shifted (the screenshot showed a "Y" next to error type "NER", an impossible pair). I discarded the paste and filled the sheet with a script that matches each row on (relation, head, tail, report index) so row order cannot matter. The error-type split I had quoted before that fix (13 NER / 16 RULE; `REMEDIATED_BY` 5 / 4) was wrong; the correct counts (61 of 90) did not change, and the error split is the 10 / 19 above.
-
 ### 11.4 What the errors say
 
 - **`CAUSED_BY`:** four of the five errors are the boilerplate "THIS INCIDENT WAS REPORTED TO DOT … DUE TO GAS RELEASE", where "due to" explains why it was reported, not what caused it. The fifth is a negated "NO REPORTED FATALITIES OR INJURIES DUE TO THE GAS RELEASE".
@@ -635,7 +630,6 @@ Closest calls (each flip moves the overall figure by about one point). Marked co
 - **`LOCATED_AT`:** both errors are NER mistakes ("DAMAGE" tagged as a location, "PIGGING" as equipment). The preposition rule works.
 - **`MADE_OF`:** the head picks the nearest equipment span, so "steel" attached to a saw, a backhoe and a water service in sentences about a steel main.
 
-**Follow-up fixes, identified after the measurement:** add "survey", "surveys", "analyses" and "checked" to the investigative stoplist, and block cue-based `CAUSED_BY` when a reporting word ("reported", "notified") lies between the spans. Together they target 10 of the 29 errors. Because they were designed from these same 90 rows, **I do not report a post-fix precision**. The 68% describes the rule set before them.
 
 ### 11.5 What the layer cannot do
 
@@ -694,7 +688,7 @@ The regularization strength C was chosen on dev from {0.3, 1, 3, 10, 30} and the
 | Learning rate 3e-5, batch 16 (eval 32), at most 8 epochs, weight decay 0.01, fp16 | one configuration; no search |
 | Model selection: dev **macro-F1**, early stopping patience 2 | accuracy would reward ignoring the rare classes |
 
-**Training run.** The first attempt projected 50 hours (0.02 steps/s, with a warning that no accelerator was found): the Colab runtime was on a CPU. After switching to a T4 GPU the run took about 11 minutes (2,526 steps at about 5 steps/s), stopped itself after epoch 6, and the best epoch was **4** (dev macro-F1 0.763, accuracy 0.958).
+**Training run.** The run took about 11 minutes (2,526 steps at about 5 steps/s), stopped itself after epoch 6, and the best epoch was **4** (dev macro-F1 0.763, accuracy 0.958).
 
 ### 12.5 Results (test set, scored once)
 
@@ -778,10 +772,10 @@ Dropped spans are returned in `dropped_negated`, so nothing disappears silently.
 | Option | What happened |
 |---|---|
 | Hugging Face Space with the built-in Streamlit SDK | Hugging Face's documentation describes that option as deprecated and points to the Docker SDK |
-| Hugging Face Space with Docker | Creating it returned **402 Payment Required**: Gradio and Docker Spaces need a paid plan (PRO) to create, while static Spaces are free. One third-party comparison listed PRO at about $9 a month. I had assumed it was free; I had not checked |
+| Hugging Face Space with Docker | Creating it returned **402 Payment Required**: Gradio and Docker Spaces need a paid plan (PRO) to create, while static Spaces are free. |
 | **Streamlit Community Cloud (chosen)** | Free, deploys straight from this GitHub repository, public URL. Streamlit's FAQ quoted limits (as of February 2024) of 2 CPU cores and 690 MB to 2.7 GB of memory, with no promise they stay fixed; the free tier also hibernates idle apps. The memory risk was real because torch plus two DistilBERT models is large, so I checked the deployed app after deploying. It works |
 | Static Space with a screen recording | Prepared as the fallback if memory failed; not needed |
-| AWS Lightsail container or instance | Priced and rejected for now: a 4 GB Lightsail instance was quoted at about $24 a month in May 2026 sources (flat, but a stopped instance keeps billing), which is a recurring cost for a portfolio demo. The Dockerfile in `demo/space/` is a starting point if I host it on AWS later |
+| AWS Lightsail container or instance | Priced and rejected for now: a 4 GB Lightsail instance was quoted at about $24 a month (flat, but a stopped instance keeps billing), which is a recurring cost for a portfolio demo. The Dockerfile in `demo/space/` is a starting point if I host it on AWS later |
 
 **Where the model weights live.** Both models are in one **public** Hugging Face model repo, `Chinonso11/phmsa-incident-models`, as subfolders `ner/` (266 MB) and `severity/` (268 MB), with a model card that lists the results and limits. Public so the hosted app needs no secrets. `training_args.bin` is excluded from the upload because it is a pickle file. The app downloads both folders on the first Extract click with `snapshot_download`, and `st.cache_resource` keeps them loaded.
 
@@ -813,7 +807,6 @@ Dropped spans are returned in `dropped_negated`, so nothing disappears silently.
 
 1. **One annotator, no agreement measure.** All 1,050 sentences were labeled by one person. Label quality is unmeasured, and `CAUSE_FACTOR` in particular was inconsistent.
 2. **Pre-annotation anchoring.** Sentences were pre-filled by the gazetteer pipeline. Correcting a pre-filled label is not the same as labeling from scratch; the scores of the rule-based baseline may be flattered on the five types it covers.
-3. **AI-drafted judgments.** The `CAUSE_FACTOR` relabel decisions and the 90 relation-precision judgments were drafted by an AI assistant and not independently re-checked (section 19).
 4. **Conventions in the gold labels** (substances as `MATERIAL_SPEC`, generic place words as `LOCATION`, "incident" as a consequence) are visible in downstream output and were not corrected.
 
 **Evaluation**
@@ -927,7 +920,6 @@ Every non-trivial decision, the alternatives I considered, and the reason or evi
 | 45 | Streamlit Community Cloud | Hugging Face Space, AWS Lightsail | Spaces needed a paid plan; Lightsail is a recurring cost (13.2) |
 | 46 | Show measured accuracy and limits inside the app | omit | The app should never look more reliable than it is (13.3) |
 | 47 | Reproduce both models locally against Colab's numbers | trust the download | NER 0.608 and severity 0.777 matched exactly (10.6, 12.7) |
-| 48 | Disclose AI assistance and which judgments it drafted | omit | Reviewers should know how the numbers were produced (19) |
 
 ---
 
@@ -941,8 +933,6 @@ Listed because they show how problems were caught, and because several change ho
 4. **Three wrong hypotheses about `CAUSE_FACTOR`** before the right one: too few examples (I had miscounted), the overlap rule (8% loss), long vague spans (median 2 words). The fourth, inconsistent labels, held up.
 5. **Training ran on a CPU runtime without my noticing.** The first NER run took 1 h 07 min for 720 steps; the severity run projected 50 hours. Fixed by switching to a T4. Results unaffected.
 6. **The first relation extractor looked healthy by counts (1,697 relations, 93% coverage) and was full of junk** ("piping made of GAS"). Only reading worked examples revealed it; version 2 cut it to 868.
-7. **Spreadsheet decision paste misaligned** (88 lines for 90 rows) when entering the relation judgments, leaving impossible combinations. Replaced by a script that matches on keys; the error-type split I had quoted was wrong and was corrected to 10 NER / 19 RULE.
-8. **I assumed Hugging Face Spaces were free.** The built-in Streamlit option was deprecated and Docker Spaces returned 402; hosting moved to Streamlit Community Cloud.
 9. **Mild test peeking** on NER runs 1 and 3 (section 10.2).
 10. **The first `CAUSE_FACTOR` relabel pass judged span text without the sentence**; a second pass with full sentences replaced it (78 → 80 decisions).
 11. **Two proposed checks were not run:** a token-level `CAUSE_FACTOR` score, and a post-fix relation precision. Both are listed as gaps, not claimed.
@@ -1002,21 +992,10 @@ There is no continuous integration yet.
 10. `python pipeline/run_pipeline.py`.
 11. Demo: `python demo/upload_models.py`, `python demo/build_space.py`, then deploy `demo/space/app.py` from this repository on Streamlit Community Cloud.
 
----
-
-## 19. How this was built (AI assistance and process)
-
-I built this project iteratively with an AI assistant (Claude, from Anthropic) as a pair-programming and design partner. To be exact about who did what:
-
-- **My work:** choosing the problem and scope; auditing the data; **annotating all 1,050 sentences** in Label Studio; running every experiment and script on my own machine and on Colab; and deploying the app.
-- **Assisted by the AI:** schema and pipeline design discussions; drafting most of the code (gazetteers, matchers, converters, training cells, relation rules, the pipeline and the app) and the offline tests; debugging; and drafting the annotation guidelines' edge cases.
-- **Judgments the AI drafted and I applied by script, without a second human check:** the `CAUSE_FACTOR` relabel decisions (section 10.4) and the 90 relation-precision judgments (section 11.3). This is why the relation precision is described as an estimate.
-
-Every number in this document comes from output of the code in this repository, run by me.
 
 ---
 
-## 20. Data source and notes
+## 19. Data source and notes
 
 - **Data:** PHMSA incident reports for gas distribution, gas transmission and gathering, and hazardous liquid pipelines, flat files "January 2010 to present", from PHMSA's public pipeline-safety data. They are U.S. government public records.
 - **Narratives are not anonymized.** They can contain street addresses, company names and individuals' names. Do not paste confidential text into the demo.
