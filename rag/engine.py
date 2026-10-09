@@ -51,6 +51,8 @@ Rules:
 - Every count, total or trend must come from STATISTICS, which cover ALL matching incidents.
   REPORTS are only the most relevant sample, so never count them to answer "how many".
 - Cite reports inline as [report_id] for every claim drawn from a narrative.
+- Only cite report ids that appear in REPORTS, copied character for character
+  (for example [GD-20190009]). Never shorten, guess or invent an id.
 - If the provided material is not enough to answer, say so plainly.
 - Start with a direct 2-3 sentence answer, then supporting detail grouped by theme."""
 
@@ -76,10 +78,12 @@ class Filters:
 
 @dataclass
 class Result:
-    answer: str
+    answer: str                     # final answer shown to users (citations checked)
     filters: Filters
     stats: dict
     sources: pd.DataFrame
+    raw_answer: str = ""            # what the model wrote, before the citation check
+    citation_fixes: list = field(default_factory=list)  # [{"cited": ..., "action": ...}]
 
     def to_dict(self) -> dict:
         src = self.sources.copy()
@@ -87,6 +91,8 @@ class Result:
             src["year"] = src["year"].astype(object).where(src["year"].notna(), None)
         return {
             "answer": self.answer,
+            "raw_answer": self.raw_answer,
+            "citation_fixes": self.citation_fixes,
             "filters": asdict(self.filters),
             "stats": self.stats,
             "sources": src.to_dict(orient="records"),
@@ -102,7 +108,60 @@ class Result:
             filters=Filters(**d["filters"]),
             stats=stats,
             sources=pd.DataFrame(d["sources"]),
+            raw_answer=d.get("raw_answer", d["answer"]),
+            citation_fixes=d.get("citation_fixes", []),
         )
+
+
+# ---------- citation guardrail ----------
+ID_RE = re.compile(r"^[A-Z]{2,4}-\d+$")           # GD-20190009, GTG-20140087, HL-...
+BRACKET_RE = re.compile(r"\s?\[([^\[\]]+)\]")
+
+
+def _edit_distance(a: str, b: str) -> int:
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i]
+        for j, cb in enumerate(b, 1):
+            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
+        prev = cur
+    return prev[-1]
+
+
+def cited_ids(text: str) -> list[str]:
+    """Report ids cited in [..] brackets (ignores bracketed text that isn't an id)."""
+    out = []
+    for group in BRACKET_RE.findall(text or ""):
+        out += [p.strip() for p in group.split(",") if ID_RE.match(p.strip())]
+    return out
+
+
+def check_citations(answer: str, valid_ids: set[str]) -> tuple[str, list[dict]]:
+    """Keep citations that are retrieved reports. Repair a citation that is one character
+    away from exactly one retrieved id; remove any other citation."""
+    fixes = []
+
+    def fix_group(m: re.Match) -> str:
+        parts = [p.strip() for p in m.group(1).split(",")]
+        if not any(ID_RE.match(p) for p in parts):
+            return m.group(0)                      # not a citation, leave it alone
+        kept = []
+        for p in parts:
+            if not ID_RE.match(p) or p in valid_ids:
+                kept.append(p)
+                continue
+            close = [v for v in valid_ids if _edit_distance(p, v) <= 1]
+            if len(close) == 1:
+                kept.append(close[0])
+                fixes.append({"cited": p, "action": f"repaired to {close[0]}"})
+            else:
+                fixes.append({"cited": p, "action": "removed (not a retrieved report)"})
+        if not kept:
+            return ""
+        lead = " " if m.group(0).startswith(" ") else ""
+        return f"{lead}[{', '.join(kept)}]"
+
+    return BRACKET_RE.sub(fix_group, answer or ""), fixes
 
 
 def _extract_json(text: str) -> dict:
@@ -303,9 +362,11 @@ class RAGEngine:
             {"role": "system", "content": ANSWER_SYSTEM},
             {"role": "user", "content": user_msg},
         ], model=self.answer_model)
+        checked, fixes = check_citations(answer, set(hits["report_id"]))
 
         sources = hits.merge(
             self.incidents[["report_id", "year", "state", "system_type", "cause", "narrative"]],
             on="report_id", how="left",
         )
-        return Result(answer=answer, filters=f, stats=stats, sources=sources)
+        return Result(answer=checked, filters=f, stats=stats, sources=sources,
+                      raw_answer=answer, citation_fixes=fixes)

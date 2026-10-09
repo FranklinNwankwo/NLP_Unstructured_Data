@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 
 from rag.config import EXAMPLES, EXAMPLES_CACHE
-from rag.engine import RAGEngine
+from rag.engine import RAGEngine, check_citations
 
 
 def load_llm_config() -> dict:
@@ -33,6 +33,21 @@ def load_llm_config() -> dict:
 def main(args):
     path = Path(EXAMPLES_CACHE)
     cache = {} if args.force or not path.exists() else json.loads(path.read_text(encoding="utf-8"))
+
+    # Run the citation guardrail over answers cached before it existed (no LLM calls).
+    checked = 0
+    for q, d in cache.items():
+        if "raw_answer" not in d:
+            valid = {str(s["report_id"]) for s in d.get("sources", [])}
+            d["raw_answer"] = d["answer"]
+            d["answer"], d["citation_fixes"] = check_citations(d["answer"], valid)
+            checked += 1
+            for fx in d["citation_fixes"]:
+                print(f"  {q[:50]}...: {fx['cited']} -> {fx['action']}")
+    if checked:
+        path.write_text(json.dumps(cache, indent=1, ensure_ascii=False), encoding="utf-8")
+        print(f"Citation check applied to {checked} cached answer(s).")
+
     todo = [q for q in EXAMPLES if q not in cache]
     if not todo:
         print(f"All {len(EXAMPLES)} examples already cached in {path}. Use --force to recompute.")

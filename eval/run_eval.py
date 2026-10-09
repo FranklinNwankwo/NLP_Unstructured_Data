@@ -16,7 +16,9 @@ What gets scored
 - filter accuracy per field, and all fields exact
 - count_correct: the engine's matching-incident count equals the gold count
 - source_precision: share of retrieved reports that satisfy the gold filters
-- citations_valid: every [id] cited in the answer is one of the retrieved reports
+- raw_citations_valid: every [id] the MODEL cited is one of the retrieved reports
+- citations_valid: same check on the answer users see, after the citation guardrail
+  (rag.engine.check_citations repairs one-character typos, removes anything else)
 - count_in_answer: for "how many" questions, the gold count appears in the answer text
 
 LLM settings come from environment variables or .streamlit/secrets.toml
@@ -33,7 +35,7 @@ from pathlib import Path
 import pandas as pd
 from openai import RateLimitError
 
-from rag.engine import Filters, RAGEngine
+from rag.engine import Filters, RAGEngine, cited_ids
 
 HERE = Path(__file__).parent
 LIST_FIELDS = ("state", "system_type", "cause")
@@ -104,14 +106,6 @@ def field_scores(pred: Filters, gold: Filters) -> dict:
     return s
 
 
-def cited_ids(answer: str) -> set[str]:
-    ids = set()
-    for group in re.findall(r"\[([^\[\]]+)\]", answer or ""):
-        for part in group.split(","):
-            part = part.strip()
-            if part:
-                ids.add(part)
-    return ids
 
 
 def count_in_text(n: int, text: str) -> bool:
@@ -178,10 +172,11 @@ def run(args):
             if args.filters_only:
                 pred = with_retries(lambda: engine.parse_filters(q["question"]))
                 pred_count = len(engine.apply_filters(pred))
-                answer, sources = "", pd.DataFrame(columns=["report_id"])
+                answer, sources, raw, fixes = "", pd.DataFrame(columns=["report_id"]), "", []
             else:
                 res = with_retries(lambda: engine.ask(q["question"]))
                 pred, answer, sources = res.filters, res.answer, res.sources
+                raw, fixes = res.raw_answer, res.citation_fixes
                 pred_count = res.stats["matching_incidents"]
         except DailyQuotaExceeded as e:
             done = [r["id"] for r in rows if "error" not in r]
@@ -207,15 +202,21 @@ def run(args):
 
         if not args.filters_only:
             src_ids = set(sources["report_id"].astype(str)) if len(sources) else set()
-            cites = cited_ids(answer)
+            raw_cites = set(cited_ids(raw))
+            final_cites = set(cited_ids(answer))
             row["n_sources"] = len(src_ids)
             row["source_precision"] = (len(src_ids & gold_ids) / len(src_ids)) if src_ids else None
-            row["has_citation"] = bool(cites) if src_ids else None
-            row["citations_valid"] = cites <= src_ids if cites else None
-            row["uncited_ids"] = ", ".join(sorted(cites - src_ids))
+            row["has_citation"] = bool(final_cites) if src_ids else None
+            # model behaviour, before the citation guardrail
+            row["raw_citations_valid"] = raw_cites <= src_ids if raw_cites else None
+            row["uncited_ids"] = ", ".join(sorted(raw_cites - src_ids))
+            # what users actually see, after the guardrail
+            row["citations_valid"] = final_cites <= src_ids if final_cites else None
+            row["citation_fixes"] = "; ".join(f"{x['cited']}: {x['action']}" for x in fixes)
             row["count_in_answer"] = (
                 count_in_text(len(gold_ids), answer) if q.get("check_count_in_answer") else None
             )
+            row["raw_answer"] = raw
             row["answer"] = answer
 
         rows.append(row)
@@ -252,7 +253,8 @@ def write_outputs(df: pd.DataFrame, args):
         ("Matching count correct", "count_correct"),
         ("Retrieved reports satisfy gold filters", "source_precision"),
         ("Answer has citations", "has_citation"),
-        ("All citations are retrieved reports", "citations_valid"),
+        ("Model citations all valid (before guardrail)", "raw_citations_valid"),
+        ("Shown citations all valid (after guardrail)", "citations_valid"),
         ("Gold count stated in answer", "count_in_answer"),
     ]
     lines = [
