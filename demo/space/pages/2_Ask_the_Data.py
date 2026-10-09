@@ -97,10 +97,16 @@ if (ask_clicked or run_example) and st.session_state.get("q", "").strip():
             with st.spinner("Filtering, retrieving and writing the answer..."):
                 res = engine.ask(question)
         except Exception as e:
-            if "429" in str(e) or "quota" in str(e).lower():
+            msg = str(e)
+            if "429" in msg or "quota" in msg.lower():
                 st.warning(
                     "The demo has used up its free daily LLM quota. The example questions "
                     "above still work; custom questions will work again after the daily reset."
+                )
+            elif "503" in msg or "overloaded" in msg.lower() or "high demand" in msg.lower():
+                st.warning(
+                    "The Gemini model is overloaded right now (a temporary problem on Google's side). "
+                    "Please try again in a minute. The example questions above still work."
                 )
             else:
                 st.error(f"Something went wrong: {e}")

@@ -16,7 +16,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from huggingface_hub import hf_hub_download
-from openai import AuthenticationError, OpenAI, RateLimitError
+from openai import (APIConnectionError, APITimeoutError, AuthenticationError,
+                    InternalServerError, OpenAI, RateLimitError)
 from sentence_transformers import SentenceTransformer
 
 from rag.config import (
@@ -162,14 +163,27 @@ class RAGEngine:
 
     # ---------- LLM ----------
     def _chat(self, messages: list[dict], json_mode: bool = False, model: str | None = None) -> str:
-        kwargs = {"model": model or self.model, "messages": messages, "temperature": 0}
+        """Call the LLM. If the model is overloaded (503) or unreachable, retry once on the
+        other configured model before giving up."""
+        primary = model or self.model
+        fallback = self.answer_model if primary == self.model else self.model
+        try:
+            return self._chat_once(messages, json_mode, primary)
+        except (InternalServerError, APIConnectionError, APITimeoutError):
+            if fallback == primary:
+                raise
+            return self._chat_once(messages, json_mode, fallback)
+
+    def _chat_once(self, messages: list[dict], json_mode: bool, model: str) -> str:
+        kwargs = {"model": model, "messages": messages, "temperature": 0}
         if json_mode:
             try:
                 resp = self.llm.chat.completions.create(
                     response_format={"type": "json_object"}, **kwargs)
                 return resp.choices[0].message.content or ""
-            except (RateLimitError, AuthenticationError):
-                raise  # quota/key problems: retrying without JSON mode would just fail again
+            except (RateLimitError, AuthenticationError, InternalServerError,
+                    APIConnectionError, APITimeoutError):
+                raise  # quota/key/overload problems: retrying without JSON mode would fail too
             except Exception:
                 pass  # provider may not support JSON mode; fall through to plain call
         resp = self.llm.chat.completions.create(**kwargs)
