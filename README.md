@@ -1001,3 +1001,24 @@ There is no continuous integration yet.
 - **Narratives are not anonymized.** They can contain street addresses, company names and individuals' names. Do not paste confidential text into the demo.
 - **Models:** `Chinonso11/phmsa-incident-models` on the Hugging Face Hub (fine-tuned from `distilbert-base-uncased`).
 - **Status:** a portfolio project. Not validated for operational, safety or regulatory use.
+
+### RAG evaluation
+
+Hand-written questions covering year phrasing ("since", "before", "between"), multiple
+states/causes, paraphrased causes and a no-filter question. Full pipeline, Gemini 3.1 Flash-Lite
+for filters and Gemini 3.8 Flash for answers.
+
+| Metric | Score |
+|---|---|
+| Filters exactly correct | 18/18 |
+| Matching incident count correct | 18/18 |
+| Retrieved reports satisfy the filters | 100% |
+| Correct count stated in "how many" answers | 6/6 |
+| Model citations all valid (before citation check) | 17/18 |
+| Citations shown to users all valid (after citation check) | 18/18 |
+
+The model occasionally mistypes or invents a report ID. Every answer is checked against the
+retrieved reports before display: a citation one character away from a retrieved ID is repaired,
+anything else is removed. In an earlier run with a looser prompt, 1 of 6 answers cited a report ID
+that does not exist; after tightening the prompt, the only error in 18 answers was a dropped digit
+(GTG-2013051 → GTG-20130051), which the check repaired.

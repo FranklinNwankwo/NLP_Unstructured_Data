@@ -1,0 +1,685 @@
+id,question,tests,gold_filters,gold_count,pred_filters,state,system_type,cause,year_min,year_max,filters_exact,pred_count,count_correct,n_sources,source_precision,has_citation,raw_citations_valid,uncited_ids,citations_valid,citation_fixes,count_in_answer,raw_answer,answer
+q01,What caused corrosion failures in Texas gas transmission lines since 2015?,"all four filters, 'since'",state in ['TX']; system type in ['GAS TRANSMISSION GATHERING']; cause in ['CORROSION FAILURE']; year >= 2015,44,state in ['TX']; system type in ['GAS TRANSMISSION GATHERING']; cause in ['CORROSION FAILURE']; year >= 2015,True,True,True,True,True,True,44,True,12,1.0,True,True,,True,,,"Since 2015, there have been 44 corrosion failure incidents on Texas gas transmission and gathering lines recorded in the data, resulting in 34 minor and 10 moderate severity events. Metallurgical investigations and operator reports show these failures were driven by both internal corrosion (caused by corrosive contaminants such as hydrogen sulfide, carbon dioxide, oxygen ingress, water dropout, and bacterial activity) and external corrosion (including direct-current interference and exposure to wet environments).
+
+### Internal Corrosion Causes
+Lab analyses from reported failures highlight several distinct chemical and biological mechanisms:
+* **Acidic Environments and Gas Contaminants:** Multiple failures occurred due to corrosive mixtures of moisture and acid gases. In one incident, carbon dioxide ($CO_2$) and water combined along the top of the pipe to create carbonic acid, forming mesa-like pitting and siderite [GTG-20250128]. Another failure was caused by hydrogen sulfide ($H_2S$) and $CO_2$ combining with water to form an acidic environment along the bottom of the line [GTG-20250070]. In another gathering line failure, internal corrosion was directly attributed to the presence of $H_2S$ [GTG-20230096].
+* **Water Dropout:** Free water accumulating in the system caused internal corrosion and pipe rupture on a gathering line in Live Oak [GTG-20230053].
+* **Oxygen Contamination:** A 10-inch line failed after an upstream producer upset allowed oxygen into the pipeline, causing severe internal corrosion and wall loss across the top half of the pipe [GTG-20220067].
+* **Microbiologically Influenced Corrosion (MIC):** A rupture and fire near Coyanosa, Texas, was caused by bacterial activity at the 6 o'clock position of the pipe; severe circular pitting characteristic of MIC reduced the pipe wall thickness to 12% of its original specification [GTG-20230087].
+* **Internal Thinning / Erosion-Corrosion:** Another gathering pipeline failed after localized internal degradation reduced the pipe wall thickness by 75% [GTG-20260037].
+
+### External Corrosion Causes
+When external corrosion was identified, it was linked to specific environmental and electrical factors:
+* **DC Interference and Under-Deposit Corrosion:** A rupture on a 24-inch line Southwest of Monahans exhibited external wall thinning down to 7% of its nominal thickness, consistent with direct current (DC) interference current corrosion and under-deposit corrosion [GTG-20240102].
+* **Groundwater and Soil Exposure:** Other pipeline sections failed due to external corrosion following installation in low, wet areas submerged in groundwater [GTG-20150129] or ruptured directly from external corrosion verified by laboratory examination [GTG-20150138].","Since 2015, there have been 44 corrosion failure incidents on Texas gas transmission and gathering lines recorded in the data, resulting in 34 minor and 10 moderate severity events. Metallurgical investigations and operator reports show these failures were driven by both internal corrosion (caused by corrosive contaminants such as hydrogen sulfide, carbon dioxide, oxygen ingress, water dropout, and bacterial activity) and external corrosion (including direct-current interference and exposure to wet environments).
+
+### Internal Corrosion Causes
+Lab analyses from reported failures highlight several distinct chemical and biological mechanisms:
+* **Acidic Environments and Gas Contaminants:** Multiple failures occurred due to corrosive mixtures of moisture and acid gases. In one incident, carbon dioxide ($CO_2$) and water combined along the top of the pipe to create carbonic acid, forming mesa-like pitting and siderite [GTG-20250128]. Another failure was caused by hydrogen sulfide ($H_2S$) and $CO_2$ combining with water to form an acidic environment along the bottom of the line [GTG-20250070]. In another gathering line failure, internal corrosion was directly attributed to the presence of $H_2S$ [GTG-20230096].
+* **Water Dropout:** Free water accumulating in the system caused internal corrosion and pipe rupture on a gathering line in Live Oak [GTG-20230053].
+* **Oxygen Contamination:** A 10-inch line failed after an upstream producer upset allowed oxygen into the pipeline, causing severe internal corrosion and wall loss across the top half of the pipe [GTG-20220067].
+* **Microbiologically Influenced Corrosion (MIC):** A rupture and fire near Coyanosa, Texas, was caused by bacterial activity at the 6 o'clock position of the pipe; severe circular pitting characteristic of MIC reduced the pipe wall thickness to 12% of its original specification [GTG-20230087].
+* **Internal Thinning / Erosion-Corrosion:** Another gathering pipeline failed after localized internal degradation reduced the pipe wall thickness by 75% [GTG-20260037].
+
+### External Corrosion Causes
+When external corrosion was identified, it was linked to specific environmental and electrical factors:
+* **DC Interference and Under-Deposit Corrosion:** A rupture on a 24-inch line Southwest of Monahans exhibited external wall thinning down to 7% of its nominal thickness, consistent with direct current (DC) interference current corrosion and under-deposit corrosion [GTG-20240102].
+* **Groundwater and Soil Exposure:** Other pipeline sections failed due to external corrosion following installation in low, wet areas submerged in groundwater [GTG-20150129] or ruptured directly from external corrosion verified by laboratory examination [GTG-20150138]."
+q02,How many excavation damage incidents happened in California?,"count question, state name -> code",state in ['CA']; cause in ['EXCAVATION DAMAGE'],108,state in ['CA']; cause in ['EXCAVATION DAMAGE'],True,True,True,True,True,True,108,True,12,1.0,True,True,,True,,True,"A total of 108 excavation damage pipeline incidents have occurred in California based on the PHMSA records covering 2010 through 2025. The vast majority of these incidents were categorized as minor, though several resulted in moderate to severe impacts.
+
+### Incident Severity Breakdown
+According to the overall statistics, the 108 incidents fall into the following severity categories:
+* **Minor:** 95 incidents
+* **Moderate:** 9 incidents
+* **Critical:** 3 incidents
+* **Severe:** 1 incident
+
+While most events resulted in limited damage or gas releases without injuries, moderate incidents could involve personal harm. For example, in one incident an excavation contractor was burned and hospitalized after a trencher struck an underground plastic gas pipeline [GD-20190009].
+
+### Yearly Distribution
+Excavation damage incidents peaked between 2013 and 2017:
+* **2010:** 5
+* **2011:** 7
+* **2012:** 5
+* **2013:** 12
+* **2014:** 10
+* **2015:** 12
+* **2016:** 8
+* **2017:** 10
+* **2018:** 9
+* **2019:** 8
+* **2020:** 4
+* **2021:** 8
+* **2022:** 2
+* **2023:** 4
+* **2024:** 2
+* **2025:** 2
+
+### Common Contributing Factors
+Narrative reports illustrate typical causes and operational factors contributing to these excavation strikes:
+* **Failure to Call or Obtain One-Call/USA Tickets:** In multiple cases, third-party contractors initiated grading or excavation work without submitting or obtaining a valid USA ticket [GD-20140069], [GD-20230063].
+* **Unmarked or Unmapped Lines:** In several instances, contractors obtained valid tickets, but utilities failed to mark lines before the work began due to locator backlogs [GD-20200053], missed lines during horizontal boring [GD-20210083], unmapped pipeline segments [GTG-20140087], or unrecorded inactive service lines [GD-20130126].
+* **Mechanical Equipment Use in Close Proximity:** Other incidents occurred when contractors operated heavy machinery—such as backhoes, trenchers, or horizontal boring rigs—too close to facilities or removed line markings during site grading activities [GD-20140092], [GD-20150081], [GTG-20120110], [HL-20130180].","A total of 108 excavation damage pipeline incidents have occurred in California based on the PHMSA records covering 2010 through 2025. The vast majority of these incidents were categorized as minor, though several resulted in moderate to severe impacts.
+
+### Incident Severity Breakdown
+According to the overall statistics, the 108 incidents fall into the following severity categories:
+* **Minor:** 95 incidents
+* **Moderate:** 9 incidents
+* **Critical:** 3 incidents
+* **Severe:** 1 incident
+
+While most events resulted in limited damage or gas releases without injuries, moderate incidents could involve personal harm. For example, in one incident an excavation contractor was burned and hospitalized after a trencher struck an underground plastic gas pipeline [GD-20190009].
+
+### Yearly Distribution
+Excavation damage incidents peaked between 2013 and 2017:
+* **2010:** 5
+* **2011:** 7
+* **2012:** 5
+* **2013:** 12
+* **2014:** 10
+* **2015:** 12
+* **2016:** 8
+* **2017:** 10
+* **2018:** 9
+* **2019:** 8
+* **2020:** 4
+* **2021:** 8
+* **2022:** 2
+* **2023:** 4
+* **2024:** 2
+* **2025:** 2
+
+### Common Contributing Factors
+Narrative reports illustrate typical causes and operational factors contributing to these excavation strikes:
+* **Failure to Call or Obtain One-Call/USA Tickets:** In multiple cases, third-party contractors initiated grading or excavation work without submitting or obtaining a valid USA ticket [GD-20140069], [GD-20230063].
+* **Unmarked or Unmapped Lines:** In several instances, contractors obtained valid tickets, but utilities failed to mark lines before the work began due to locator backlogs [GD-20200053], missed lines during horizontal boring [GD-20210083], unmapped pipeline segments [GTG-20140087], or unrecorded inactive service lines [GD-20130126].
+* **Mechanical Equipment Use in Close Proximity:** Other incidents occurred when contractors operated heavy machinery—such as backhoes, trenchers, or horizontal boring rigs—too close to facilities or removed line markings during site grading activities [GD-20140092], [GD-20150081], [GTG-20120110], [HL-20130180]."
+q03,What are the most common causes of pipeline incidents?,no filters: must not invent any,none (all incidents),9610,none (all incidents),True,True,True,True,True,True,9610,True,12,1.0,True,True,,True,,,"The leading cause of pipeline incidents is **Equipment Failure**, which accounts for 3,483 of the 9,610 total incidents. **Corrosion Failure** is the second most common cause at 1,756 incidents, followed by **Incorrect Operation** (1,083 incidents) and **Excavation Damage** (966 incidents). Together, equipment and corrosion issues represent more than half of all reported pipeline failures.
+
+---
+
+### Mechanical and Material Causes
+* **Equipment Failure (3,483 incidents):** The single most frequent cause in the dataset, representing over a third of all recorded incidents.
+* **Corrosion Failure (1,756 incidents):** The second most frequent incident cause. Narrative reports illustrate failures where pipe sections ruptured and separated from trenches before laboratory analyses confirmed external corrosion as the root failure mechanism [GTG-20150138].
+* **Material Failure of Pipe or Weld (728 incidents):** These failures frequently stem from fabrication, installation, or legacy welding defects. For example, one failure was traced back to initial pipe construction from 1941, where porosity in root passes eventually propagated into a girth-weld pinhole defect [HL-20250019]. Another occurred when an improperly fitted reinforcement saddle with insufficient single-pass fillet welds failed under stress from piping movement [GTG-20230106].
+
+### Human and Operational Factors
+* **Incorrect Operation (1,083 incidents):** The third most prevalent cause overall. These can encompass operational missteps or improper procedures identified during post-incident investigations [HL-20100124].
+
+### External and Environmental Forces
+* **Excavation Damage (966 incidents):** Incidents caused by third-party or contractor interference during earthmoving or dredging. Documented examples include pipeline ruptures caused by mechanical gouges from a contractor's trackhoe [GTG-20160012] and pipeline strikes by dredging vessels operating under expired One-Call tickets without proper notification [HL-20160310].
+* **Other Outside Force Damage (718 incidents):** Encompasses non-excavation external physical impacts or third-party interference.
+* **Natural Force Damage (529 incidents):** Weather and geological phenomena leading to line failures or ruptures [GTG-20200057].
+
+### Other Incident Causes
+* **Other Incident Cause (347 incidents):** The least common category, often applied when investigations remain ongoing [GTG-20200057], [GTG-20260046], when equipment issues involve unclassified valve sealing failures [GTG-20220090], or when physical site limitations (such as deep river crossings or heavily eroded pipe) prevent conclusive root-cause determinations [GTG-20140115], [GTG-20150096], [GTG-20190077].","The leading cause of pipeline incidents is **Equipment Failure**, which accounts for 3,483 of the 9,610 total incidents. **Corrosion Failure** is the second most common cause at 1,756 incidents, followed by **Incorrect Operation** (1,083 incidents) and **Excavation Damage** (966 incidents). Together, equipment and corrosion issues represent more than half of all reported pipeline failures.
+
+---
+
+### Mechanical and Material Causes
+* **Equipment Failure (3,483 incidents):** The single most frequent cause in the dataset, representing over a third of all recorded incidents.
+* **Corrosion Failure (1,756 incidents):** The second most frequent incident cause. Narrative reports illustrate failures where pipe sections ruptured and separated from trenches before laboratory analyses confirmed external corrosion as the root failure mechanism [GTG-20150138].
+* **Material Failure of Pipe or Weld (728 incidents):** These failures frequently stem from fabrication, installation, or legacy welding defects. For example, one failure was traced back to initial pipe construction from 1941, where porosity in root passes eventually propagated into a girth-weld pinhole defect [HL-20250019]. Another occurred when an improperly fitted reinforcement saddle with insufficient single-pass fillet welds failed under stress from piping movement [GTG-20230106].
+
+### Human and Operational Factors
+* **Incorrect Operation (1,083 incidents):** The third most prevalent cause overall. These can encompass operational missteps or improper procedures identified during post-incident investigations [HL-20100124].
+
+### External and Environmental Forces
+* **Excavation Damage (966 incidents):** Incidents caused by third-party or contractor interference during earthmoving or dredging. Documented examples include pipeline ruptures caused by mechanical gouges from a contractor's trackhoe [GTG-20160012] and pipeline strikes by dredging vessels operating under expired One-Call tickets without proper notification [HL-20160310].
+* **Other Outside Force Damage (718 incidents):** Encompasses non-excavation external physical impacts or third-party interference.
+* **Natural Force Damage (529 incidents):** Weather and geological phenomena leading to line failures or ruptures [GTG-20200057].
+
+### Other Incident Causes
+* **Other Incident Cause (347 incidents):** The least common category, often applied when investigations remain ongoing [GTG-20200057], [GTG-20260046], when equipment issues involve unclassified valve sealing failures [GTG-20220090], or when physical site limitations (such as deep river crossings or heavily eroded pipe) prevent conclusive root-cause determinations [GTG-20140115], [GTG-20150096], [GTG-20190077]."
+q04,How many hazardous liquid incidents were there in 2018?,single year 'in 2018',system type in ['HAZARDOUS LIQUID']; year >= 2018; year <= 2018,405,system type in ['HAZARDOUS LIQUID']; year >= 2018; year <= 2018,True,True,True,True,True,True,405,True,12,1.0,True,True,,True,,True,"There were **405** hazardous liquid pipeline incidents reported in 2018. The vast majority of these incidents were classified as minor in severity, with equipment failure serving as the primary cause.
+
+### Incident Causes
+- **Equipment Failure:** 221 incidents (e.g., pump seal failures [HL-20180040, HL-20180140, HL-20190006] and piping cracks [HL-20180200, HL-20180272])
+- **Incorrect Operation:** 58 incidents (e.g., procedural failures causing tank overfilling or inadvertent open valves [HL-20180050, HL-20180121, HL-20180241])
+- **Corrosion Failure:** 56 incidents
+- **Material Failure of Pipe or Weld:** 24 incidents
+- **Excavation Damage:** 20 incidents
+- **Natural Force Damage:** 14 incidents (e.g., heavy rainfall and flooding [HL-20180141, HL-20180206])
+- **Other Outside Force Damage:** 10 incidents (e.g., third-party vehicle impact [HL-20180171])
+- **Other Incident Cause:** 2 incidents
+
+### Geographic Distribution
+Incidents were heavily concentrated in major energy-producing states:
+- **Texas (TX):** 183
+- **Oklahoma (OK):** 46
+- **Louisiana (LA):** 20
+- **North Dakota (ND):** 18
+- **California (CA):** 17
+- **Kansas (KS):** 16
+- **New Mexico (NM):** 13
+- **Illinois (IL):** 9
+- **Wyoming (WY):** 8
+- **Indiana (IN):** 8
+
+### Severity Breakdown
+- **Minor:** 389 incidents
+- **Moderate:** 15 incidents (such as vapor ignitions and grass fires [HL-20190001, HL-20180241])
+- **Severe:** 1 incident","There were **405** hazardous liquid pipeline incidents reported in 2018. The vast majority of these incidents were classified as minor in severity, with equipment failure serving as the primary cause.
+
+### Incident Causes
+- **Equipment Failure:** 221 incidents (e.g., pump seal failures [HL-20180040, HL-20180140, HL-20190006] and piping cracks [HL-20180200, HL-20180272])
+- **Incorrect Operation:** 58 incidents (e.g., procedural failures causing tank overfilling or inadvertent open valves [HL-20180050, HL-20180121, HL-20180241])
+- **Corrosion Failure:** 56 incidents
+- **Material Failure of Pipe or Weld:** 24 incidents
+- **Excavation Damage:** 20 incidents
+- **Natural Force Damage:** 14 incidents (e.g., heavy rainfall and flooding [HL-20180141, HL-20180206])
+- **Other Outside Force Damage:** 10 incidents (e.g., third-party vehicle impact [HL-20180171])
+- **Other Incident Cause:** 2 incidents
+
+### Geographic Distribution
+Incidents were heavily concentrated in major energy-producing states:
+- **Texas (TX):** 183
+- **Oklahoma (OK):** 46
+- **Louisiana (LA):** 20
+- **North Dakota (ND):** 18
+- **California (CA):** 17
+- **Kansas (KS):** 16
+- **New Mexico (NM):** 13
+- **Illinois (IL):** 9
+- **Wyoming (WY):** 8
+- **Indiana (IN):** 8
+
+### Severity Breakdown
+- **Minor:** 389 incidents
+- **Moderate:** 15 incidents (such as vapor ignitions and grass fires [HL-20190001, HL-20180241])
+- **Severe:** 1 incident"
+q05,Describe equipment failures on gas distribution systems in Pennsylvania between 2012 and 2018.,inclusive 'between' range,state in ['PA']; system type in ['GAS DISTRIBUTION']; cause in ['EQUIPMENT FAILURE']; year >= 2012; year <= 2018,2,state in ['PA']; system type in ['GAS DISTRIBUTION']; cause in ['EQUIPMENT FAILURE']; year >= 2012; year <= 2018,True,True,True,True,True,True,2,True,2,1.0,True,True,,True,,,"Between 2012 and 2018, there were exactly 2 equipment failure incidents on gas distribution systems in Pennsylvania, with 1 occurring in 2013 and 1 in 2014. Both incidents were classified as minor in severity. In both instances, failures involved components at regulator stations leading to overpressure situations or venting via relief valves.
+
+### Regulator Station Component Failures
+* **Boot and Relief Valve Malfunction (2013):** At a district regulator station in Altoona, Pennsylvania, gas control received an overpressure alarm on the system [GD-20130020]. A post-incident evaluation revealed a boot failure in the regulator system as well as relief valves that failed to respond at their tested set points [GD-20130020]. A technician responded on-site and throttled back inlet valves to return the system to its maximum allowable operating pressure (MAOP) [GD-20130020].
+* **Control Gas Regulator Failure and Slag Contamination (2014):** At another regulator station, the regulators supplying control gas to the positioner on a control valve failed [GD-20140106]. This failure created excessive downstream pressure that triggered the station's overpressure relief valve to open [GD-20140106]. Once open, the relief valve failed to re-seat because weld slag was present on the valve seat, resulting in the venting of an estimated 3.5 million cubic feet of natural gas before inlet and outlet valves were closed to isolate the issue [GD-20140106].
+
+### Remediation and Preventative Measures
+* **Leak Surveys and Equipment Upgrades:** Following the 2013 overpressurization, technicians performed leak surveys on all mains and services within the affected distribution area and inspected all downstream regulating equipment [GD-20130020]. The station configuration was converted from a worker-relief setup to a worker-monitor system with relief protection, and standby regulator runs were similarly modified [GD-20130020].
+* **Filtration, Supplemental Relief, and Vibration Control:** Following the 2014 venting incident, operators installed a dedicated filter upstream of the instrument gas regulators and added a relief valve to instrument gas lines for supplemental overpressure protection [GD-20140106]. Additionally, supply gas tubing was rerouted to reduce vibration, and enhanced periodic maintenance schedules were established [GD-20140106].","Between 2012 and 2018, there were exactly 2 equipment failure incidents on gas distribution systems in Pennsylvania, with 1 occurring in 2013 and 1 in 2014. Both incidents were classified as minor in severity. In both instances, failures involved components at regulator stations leading to overpressure situations or venting via relief valves.
+
+### Regulator Station Component Failures
+* **Boot and Relief Valve Malfunction (2013):** At a district regulator station in Altoona, Pennsylvania, gas control received an overpressure alarm on the system [GD-20130020]. A post-incident evaluation revealed a boot failure in the regulator system as well as relief valves that failed to respond at their tested set points [GD-20130020]. A technician responded on-site and throttled back inlet valves to return the system to its maximum allowable operating pressure (MAOP) [GD-20130020].
+* **Control Gas Regulator Failure and Slag Contamination (2014):** At another regulator station, the regulators supplying control gas to the positioner on a control valve failed [GD-20140106]. This failure created excessive downstream pressure that triggered the station's overpressure relief valve to open [GD-20140106]. Once open, the relief valve failed to re-seat because weld slag was present on the valve seat, resulting in the venting of an estimated 3.5 million cubic feet of natural gas before inlet and outlet valves were closed to isolate the issue [GD-20140106].
+
+### Remediation and Preventative Measures
+* **Leak Surveys and Equipment Upgrades:** Following the 2013 overpressurization, technicians performed leak surveys on all mains and services within the affected distribution area and inspected all downstream regulating equipment [GD-20130020]. The station configuration was converted from a worker-relief setup to a worker-monitor system with relief protection, and standby regulator runs were similarly modified [GD-20130020].
+* **Filtration, Supplemental Relief, and Vibration Control:** Following the 2014 venting incident, operators installed a dedicated filter upstream of the instrument gas regulators and added a relief valve to instrument gas lines for supplemental overpressure protection [GD-20140106]. Additionally, supply gas tubing was rerouted to reduce vibration, and enhanced periodic maintenance schedules were established [GD-20140106]."
+q06,What went wrong in Oklahoma pipeline incidents before 2014?,'before' is exclusive,state in ['OK']; year <= 2013,169,state in ['OK']; year <= 2013,True,True,True,True,True,True,169,True,12,1.0,True,False,GTG-2013051,True,GTG-2013051: repaired to GTG-20130051,,"Between 2010 and 2013, Oklahoma experienced 169 pipeline incidents, predominantly classified as minor (161 incidents), with 5 moderate and 3 severe incidents. The leading drivers of these incidents were equipment failures (62 incidents) and corrosion failures (47 incidents), followed by excavation damage and incorrect operations (17 incidents each). Other contributing causes included material or weld failures (11 incidents), natural force damage (9 incidents), and other causes (6 incidents).
+
+### Equipment and Corrosion Failures
+Equipment failures were the single most frequent cause in Oklahoma during this period, accounting for 62 incidents. Corrosion failures were the second leading cause with 47 incidents, including an event where a 26-inch pipeline ruptured and ignited due to shallow external pit corrosion on the pipe's outside diameter [GTG-20100014].
+
+### Excavation Damage
+Excavation activities caused 17 incidents, frequently involving heavy equipment striking pipelines:
+* **Failure to notify or maintain clearance:** A contractor excavating for real estate development failed to make a required one-call notification and repeatedly scraped soil over a pipeline until puncturing it [HL-20110410]. Another contractor plowing in telephone lines gashed a pipeline, shutting off natural gas service to the town of Mountain View [GTG-20110382]. In another instance, a track hoe bucket struck and punctured a line during maintenance work [HL-20130306].
+* **Shallow cover and equipment traffic:** Pipeline damage occurred when bulldozer tracks contacted pipe during road-crossing construction over a creek bed [HL-20140007]. In another case, a landowner deep-breaking a field struck a 16-inch mainline in an area where rainwater runoff and erosion had reduced soil cover [HL-20120217].
+
+### Incorrect Operation and Worksite Coordination
+Human error and procedural deviations were responsible for 17 incidents:
+* **Valve and pressure control errors:** A controller failed to follow shutdown procedures while isolating a gathering system, overpressuring the line and causing it to rupture at a pre-existing gouge and dent [HL-20100008]. During commissioning and pigging of a mainline, an incorrectly positioned outlet valve caused a secondary separator to overflow crude oil into a flare line, igniting a fire and crude mist spray [HL-20110081].
+* **Simultaneous operations:** During compressor station tie-ins, lack of communication between two simultaneous work crews resulted in hot work igniting pipeline vapors near an open 12-inch pipe flange, causing a flash fire that hospitalized a contract worker [GTG-20100022].
+
+### Material Failures and Natural Force Damage
+* **Material and weld defects (11 incidents):** These failures involved issues such as a line release confirmed by metallurgical testing to be caused by an original manufacturing defect [HL-20130405], as well as a pinhole leak discovered along a pipe seam [HL-20110299].
+* **Natural forces (9 incidents):** Severe weather contributed to infrastructure failures; for example, an EF5 tornado destroyed a trestle bridge carrying pipeline spans, causing the lines to drop into a riverbed and breaking off a 1-inch nipple [GTG-2013051].","Between 2010 and 2013, Oklahoma experienced 169 pipeline incidents, predominantly classified as minor (161 incidents), with 5 moderate and 3 severe incidents. The leading drivers of these incidents were equipment failures (62 incidents) and corrosion failures (47 incidents), followed by excavation damage and incorrect operations (17 incidents each). Other contributing causes included material or weld failures (11 incidents), natural force damage (9 incidents), and other causes (6 incidents).
+
+### Equipment and Corrosion Failures
+Equipment failures were the single most frequent cause in Oklahoma during this period, accounting for 62 incidents. Corrosion failures were the second leading cause with 47 incidents, including an event where a 26-inch pipeline ruptured and ignited due to shallow external pit corrosion on the pipe's outside diameter [GTG-20100014].
+
+### Excavation Damage
+Excavation activities caused 17 incidents, frequently involving heavy equipment striking pipelines:
+* **Failure to notify or maintain clearance:** A contractor excavating for real estate development failed to make a required one-call notification and repeatedly scraped soil over a pipeline until puncturing it [HL-20110410]. Another contractor plowing in telephone lines gashed a pipeline, shutting off natural gas service to the town of Mountain View [GTG-20110382]. In another instance, a track hoe bucket struck and punctured a line during maintenance work [HL-20130306].
+* **Shallow cover and equipment traffic:** Pipeline damage occurred when bulldozer tracks contacted pipe during road-crossing construction over a creek bed [HL-20140007]. In another case, a landowner deep-breaking a field struck a 16-inch mainline in an area where rainwater runoff and erosion had reduced soil cover [HL-20120217].
+
+### Incorrect Operation and Worksite Coordination
+Human error and procedural deviations were responsible for 17 incidents:
+* **Valve and pressure control errors:** A controller failed to follow shutdown procedures while isolating a gathering system, overpressuring the line and causing it to rupture at a pre-existing gouge and dent [HL-20100008]. During commissioning and pigging of a mainline, an incorrectly positioned outlet valve caused a secondary separator to overflow crude oil into a flare line, igniting a fire and crude mist spray [HL-20110081].
+* **Simultaneous operations:** During compressor station tie-ins, lack of communication between two simultaneous work crews resulted in hot work igniting pipeline vapors near an open 12-inch pipe flange, causing a flash fire that hospitalized a contract worker [GTG-20100022].
+
+### Material Failures and Natural Force Damage
+* **Material and weld defects (11 incidents):** These failures involved issues such as a line release confirmed by metallurgical testing to be caused by an original manufacturing defect [HL-20130405], as well as a pinhole leak discovered along a pipe seam [HL-20110299].
+* **Natural forces (9 incidents):** Severe weather contributed to infrastructure failures; for example, an EF5 tornado destroyed a trestle bridge carrying pipeline spans, causing the lines to drop into a riverbed and breaking off a 1-inch nipple [GTG-20130051]."
+q07,Compare corrosion incidents in Texas and Louisiana.,multi-state,"state in ['LA', 'TX']; cause in ['CORROSION FAILURE']",813,"state in ['LA', 'TX']; cause in ['CORROSION FAILURE']",True,True,True,True,True,True,813,True,12,1.0,True,True,,True,,,"Between 2010 and 2026, Texas experienced significantly more pipeline corrosion incidents than Louisiana, accounting for 703 (86.5%) of the 813 total incidents compared to Louisiana's 110 (13.5%). Across both states combined, the vast majority of corrosion incidents were classified as minor (793 incidents), with 19 moderate incidents and only 1 severe incident. Specific incident narratives from both states highlight shared corrosion mechanisms, particularly internal microbiologically influenced corrosion (MIC) and external degradation.
+
+### Incident Volume and Severity
+* **Geographic Distribution:** Texas recorded over six times as many corrosion failures as Louisiana, with 703 incidents in Texas versus 110 in Louisiana out of 813 total matching events.
+* **Severity Profile:** The vast majority of corrosion failures across both states were classified as minor (793 incidents). Only 19 incidents were classified as moderate, and a single incident was categorized as severe.
+
+### Corrosion Failure Mechanisms
+Narratives from both states illustrate recurring corrosion mechanisms, including internal bacterial attack and external environment-driven deterioration:
+* **Microbiologically Influenced Corrosion (MIC):** In Louisiana, a crude oil leak at a station facility was attributed to an internal pinhole caused by microbial induced corrosion at the 6 o'clock position of a control valve pipe [HL-20250016]. Similarly, multiple Texas failures involved internal bacterial degradation, including MIC pinhole leaks [HL-20250179], [HL-20150103] and sulfate-reducing bacterial corrosion in stagnant fluids around meter drains [HL-20110433].
+* **Other Internal Corrosion:** Additional Texas incidents involved internal under-deposit and pitting corrosion near girth welds [HL-20200052] or internal pitting driven by inorganic salts and sulfur [HL-20120227].
+* **External Corrosion:** Texas narratives frequently cite external degradation modes, including external aqueous corrosion [HL-20160410], atmospheric or soil exposure from ground erosion [HL-20110085], line ruptures verified as external corrosion by metallurgical testing [GTG-20150138], and pipe weeping confirmed by pressure testing [HL-20150275]. In one instance, external pipeline corrosion occurred where an adjacent municipal concrete sewer line failed and discharged sewage around the pipe [HL-20250139].
+
+### Operational Impacts and Mitigation
+* **Detection Methods:** Failures in both states were identified during routine station checks [HL-20250016], aerial patrols [HL-20200052], [HL-20250179], [HL-20150275], SCADA indications [HL-20250139], or pressure drops observed by control room personnel [GTG-20150138].
+* **Corrective Redesigns:** Following internal corrosion failures, operators in Louisiana modified pipe geometry—replacing concentric reducers with eccentric reducers and verifying turbulent flow calculations to prevent stagnant fluid and solids retention [HL-20250016]. Texas operators instituted preventative measures such as coupon monitoring, increased maintenance pigging and inhibitor injections [HL-20200052], [HL-20160410], or permanent line isolation and nitrogen blanketing [HL-20250179], [HL-20110085].","Between 2010 and 2026, Texas experienced significantly more pipeline corrosion incidents than Louisiana, accounting for 703 (86.5%) of the 813 total incidents compared to Louisiana's 110 (13.5%). Across both states combined, the vast majority of corrosion incidents were classified as minor (793 incidents), with 19 moderate incidents and only 1 severe incident. Specific incident narratives from both states highlight shared corrosion mechanisms, particularly internal microbiologically influenced corrosion (MIC) and external degradation.
+
+### Incident Volume and Severity
+* **Geographic Distribution:** Texas recorded over six times as many corrosion failures as Louisiana, with 703 incidents in Texas versus 110 in Louisiana out of 813 total matching events.
+* **Severity Profile:** The vast majority of corrosion failures across both states were classified as minor (793 incidents). Only 19 incidents were classified as moderate, and a single incident was categorized as severe.
+
+### Corrosion Failure Mechanisms
+Narratives from both states illustrate recurring corrosion mechanisms, including internal bacterial attack and external environment-driven deterioration:
+* **Microbiologically Influenced Corrosion (MIC):** In Louisiana, a crude oil leak at a station facility was attributed to an internal pinhole caused by microbial induced corrosion at the 6 o'clock position of a control valve pipe [HL-20250016]. Similarly, multiple Texas failures involved internal bacterial degradation, including MIC pinhole leaks [HL-20250179], [HL-20150103] and sulfate-reducing bacterial corrosion in stagnant fluids around meter drains [HL-20110433].
+* **Other Internal Corrosion:** Additional Texas incidents involved internal under-deposit and pitting corrosion near girth welds [HL-20200052] or internal pitting driven by inorganic salts and sulfur [HL-20120227].
+* **External Corrosion:** Texas narratives frequently cite external degradation modes, including external aqueous corrosion [HL-20160410], atmospheric or soil exposure from ground erosion [HL-20110085], line ruptures verified as external corrosion by metallurgical testing [GTG-20150138], and pipe weeping confirmed by pressure testing [HL-20150275]. In one instance, external pipeline corrosion occurred where an adjacent municipal concrete sewer line failed and discharged sewage around the pipe [HL-20250139].
+
+### Operational Impacts and Mitigation
+* **Detection Methods:** Failures in both states were identified during routine station checks [HL-20250016], aerial patrols [HL-20200052], [HL-20250179], [HL-20150275], SCADA indications [HL-20250139], or pressure drops observed by control room personnel [GTG-20150138].
+* **Corrective Redesigns:** Following internal corrosion failures, operators in Louisiana modified pipe geometry—replacing concentric reducers with eccentric reducers and verifying turbulent flow calculations to prevent stagnant fluid and solids retention [HL-20250016]. Texas operators instituted preventative measures such as coupon monitoring, increased maintenance pigging and inhibitor injections [HL-20200052], [HL-20160410], or permanent line isolation and nitrogen blanketing [HL-20250179], [HL-20110085]."
+q08,How many incidents were caused by natural force damage after 2016?,'after' is exclusive,cause in ['NATURAL FORCE DAMAGE']; year >= 2017,284,cause in ['NATURAL FORCE DAMAGE']; year >= 2017,True,True,True,True,True,True,284,True,12,1.0,True,True,,True,,True,"A total of 284 pipeline incidents were caused by natural force damage after 2016. The number of occurrences peaked in 2021 with 46 incidents, before dropping to a low of 15 in 2024. The vast majority of these incidents were classified as minor in severity.
+
+### Annual Breakdown and Severity
+* **Incident counts by year**: Incidents occurred across every year in the period: 35 in 2017, 36 in 2018, 37 in 2019, 25 in 2020, 46 in 2021, 24 in 2022, 18 in 2023, 15 in 2024, 23 in 2025, and 25 in 2026.
+* **Severity distribution**: Most incidents were categorized as minor (222 incidents), followed by moderate (56 incidents), and severe (6 incidents).
+
+### Geographic Distribution
+* Texas experienced the highest concentration of natural force damage incidents with 61 events.
+* Other states with notable incident counts include Oklahoma (23), Louisiana (22), Illinois (14), Minnesota (13), California (12), Pennsylvania (11), West Virginia (11), Ohio (10), and Georgia (8).
+
+### Common Natural Force Mechanisms
+Individual incident reports describe a variety of environmental and meteorological conditions leading to damage:
+* **Earth and Soil Movement**: Heavy rainfall and shifting terrain caused pipeline buckling, cracking, or leaks in Ohio [GTG-20240056], [GTG-20210033] and California [GTG-20260072].
+* **Hurricanes and High Winds**: Severe wind and storm impacts from events like Hurricane Michael [GD-20180108] and Hurricane Delta [HL-20200302] damaged valves and distribution systems. High winds and storms also caused trees or poles to collapse directly onto pipeline infrastructure [GD-20250025], [HL-20200302].
+* **Lightning Strikes**: Lightning strikes during storms traveled through adjacent structures or electrical equipment to rupture and ignite gas lines [GD-20200082], [GD-20210091] or damage pipelines during storm events such as Hurricane Francine [HL-20240236].
+* **Freezing Temperatures and Vegetation**: Natural force events also included frozen components causing equipment releases [HL-20190059] and tree root growth exerting bending stresses on mains [GD-20170051].","A total of 284 pipeline incidents were caused by natural force damage after 2016. The number of occurrences peaked in 2021 with 46 incidents, before dropping to a low of 15 in 2024. The vast majority of these incidents were classified as minor in severity.
+
+### Annual Breakdown and Severity
+* **Incident counts by year**: Incidents occurred across every year in the period: 35 in 2017, 36 in 2018, 37 in 2019, 25 in 2020, 46 in 2021, 24 in 2022, 18 in 2023, 15 in 2024, 23 in 2025, and 25 in 2026.
+* **Severity distribution**: Most incidents were categorized as minor (222 incidents), followed by moderate (56 incidents), and severe (6 incidents).
+
+### Geographic Distribution
+* Texas experienced the highest concentration of natural force damage incidents with 61 events.
+* Other states with notable incident counts include Oklahoma (23), Louisiana (22), Illinois (14), Minnesota (13), California (12), Pennsylvania (11), West Virginia (11), Ohio (10), and Georgia (8).
+
+### Common Natural Force Mechanisms
+Individual incident reports describe a variety of environmental and meteorological conditions leading to damage:
+* **Earth and Soil Movement**: Heavy rainfall and shifting terrain caused pipeline buckling, cracking, or leaks in Ohio [GTG-20240056], [GTG-20210033] and California [GTG-20260072].
+* **Hurricanes and High Winds**: Severe wind and storm impacts from events like Hurricane Michael [GD-20180108] and Hurricane Delta [HL-20200302] damaged valves and distribution systems. High winds and storms also caused trees or poles to collapse directly onto pipeline infrastructure [GD-20250025], [HL-20200302].
+* **Lightning Strikes**: Lightning strikes during storms traveled through adjacent structures or electrical equipment to rupture and ignite gas lines [GD-20200082], [GD-20210091] or damage pipelines during storm events such as Hurricane Francine [HL-20240236].
+* **Freezing Temperatures and Vegetation**: Natural force events also included frozen components causing equipment releases [HL-20190059] and tree root growth exerting bending stresses on mains [GD-20170051]."
+q09,What kinds of weld or pipe material failures have been reported in hazardous liquid lines?,paraphrased cause category,system type in ['HAZARDOUS LIQUID']; cause in ['MATERIAL FAILURE OF PIPE OR WELD'],405,system type in ['HAZARDOUS LIQUID']; cause in ['MATERIAL FAILURE OF PIPE OR WELD'],True,True,True,True,True,True,405,True,12,1.0,True,True,,True,,,"Hazardous liquid pipeline reports describe a variety of pipe material and weld failures, including original manufacturing flaws in the pipe body, longitudinal seam weld defects, girth weld cracking, and failures of historic repair welds. PHMSA data records 405 incidents attributed to material failure of pipe or weld, with the vast majority classified as minor (395 incidents), alongside 9 moderate incidents and 1 critical incident. Texas accounted for the largest share by state with 127 incidents.
+
+### Pipe Body and Manufacturing Anomalies
+* **Laminations and Wall Cavities:** Pipe segments have failed due to pre-existing laminations and cavities originating during manufacture. In one instance, a cavity associated with laminations reduced wall thickness, leading to cyclic fatigue cracking and ductile overload failure [HL-20130030]. In seamless pipe, laminations have collected hydrogen, creating hydrogen blisters and subsequent step-wise cracking [HL-20140155].
+* **Casting Inclusions:** Metallurgical analyses have identified internal anomalies originating during steel casting prior to pipe rolling, which later propagated into through-wall fatigue cracks [HL-20110251].
+
+### Longitudinal Seam Weld Failures
+* **Weld Inclusions and Incomplete Bonding:** Electric resistance welded (ERW) seams have failed due to foreign material contamination during pipe production, such as a copper penetrator preventing a complete bond and leaving a weakened microstructure that eventually developed a pin-hole leak [HL-20110272]. 
+* **Seam Ruptures:** Operators have reported full pipeline ruptures initiating along the longitudinal seam of the pipe segment [HL-20100021].
+* **Stress and Fatigue Interaction with Seams:** Mechanical stress interacting with longitudinal seams has caused failures; for example, a pipe resting on a rock created a dent directly on an ERW seam, leading to cyclic fatigue cracking along the seam [HL-20100060].
+
+### Girth Weld and Circumferential Failures
+* **Construction Defects and Mechanical Stress:** Cracking has occurred directly on girth welds, where pre-existing construction weld flaws combined with external mechanical stresses to produce leaks [HL-20100233], as well as general weld defects identified by metallurgical evaluations [HL-20250157].
+* **Stress Corrosion Cracking (SCC):** Girth welds can serve as initiation points for environmental cracking, such as circumferential stress corrosion cracking originating at the toe of a girth weld [HL-20100220].
+
+### Repair Welds and Handling Failures
+* **Repair Sleeve Welds:** Failures have also occurred on previous repair components, including leaks developing along the longitudinal welds of historic full-sleeve pipeline repairs [HL-20180167].
+* **Trench Movement and Mechanical Strain:** Physical manipulation and thermal/mechanical forces during maintenance—such as pipe bowing and shifting while tacking fittings onto the line—have generated through-wall cracks [HL-20100179].","Hazardous liquid pipeline reports describe a variety of pipe material and weld failures, including original manufacturing flaws in the pipe body, longitudinal seam weld defects, girth weld cracking, and failures of historic repair welds. PHMSA data records 405 incidents attributed to material failure of pipe or weld, with the vast majority classified as minor (395 incidents), alongside 9 moderate incidents and 1 critical incident. Texas accounted for the largest share by state with 127 incidents.
+
+### Pipe Body and Manufacturing Anomalies
+* **Laminations and Wall Cavities:** Pipe segments have failed due to pre-existing laminations and cavities originating during manufacture. In one instance, a cavity associated with laminations reduced wall thickness, leading to cyclic fatigue cracking and ductile overload failure [HL-20130030]. In seamless pipe, laminations have collected hydrogen, creating hydrogen blisters and subsequent step-wise cracking [HL-20140155].
+* **Casting Inclusions:** Metallurgical analyses have identified internal anomalies originating during steel casting prior to pipe rolling, which later propagated into through-wall fatigue cracks [HL-20110251].
+
+### Longitudinal Seam Weld Failures
+* **Weld Inclusions and Incomplete Bonding:** Electric resistance welded (ERW) seams have failed due to foreign material contamination during pipe production, such as a copper penetrator preventing a complete bond and leaving a weakened microstructure that eventually developed a pin-hole leak [HL-20110272]. 
+* **Seam Ruptures:** Operators have reported full pipeline ruptures initiating along the longitudinal seam of the pipe segment [HL-20100021].
+* **Stress and Fatigue Interaction with Seams:** Mechanical stress interacting with longitudinal seams has caused failures; for example, a pipe resting on a rock created a dent directly on an ERW seam, leading to cyclic fatigue cracking along the seam [HL-20100060].
+
+### Girth Weld and Circumferential Failures
+* **Construction Defects and Mechanical Stress:** Cracking has occurred directly on girth welds, where pre-existing construction weld flaws combined with external mechanical stresses to produce leaks [HL-20100233], as well as general weld defects identified by metallurgical evaluations [HL-20250157].
+* **Stress Corrosion Cracking (SCC):** Girth welds can serve as initiation points for environmental cracking, such as circumferential stress corrosion cracking originating at the toe of a girth weld [HL-20100220].
+
+### Repair Welds and Handling Failures
+* **Repair Sleeve Welds:** Failures have also occurred on previous repair components, including leaks developing along the longitudinal welds of historic full-sleeve pipeline repairs [HL-20180167].
+* **Trench Movement and Mechanical Strain:** Physical manipulation and thermal/mechanical forces during maintenance—such as pipe bowing and shifting while tacking fittings onto the line—have generated through-wall cracks [HL-20100179]."
+q10,Were there incidents where someone digging hit a gas distribution line in Ohio?,colloquial cause ('digging'),state in ['OH']; system type in ['GAS DISTRIBUTION']; cause in ['EXCAVATION DAMAGE'],28,state in ['OH']; system type in ['GAS DISTRIBUTION']; cause in ['EXCAVATION DAMAGE'],True,True,True,True,True,True,28,True,12,1.0,True,True,,True,,,"Yes, there have been 28 reported excavation damage incidents involving gas distribution pipelines in Ohio. Across all 28 incidents, 13 were classified as moderate severity, 12 as minor, 2 as critical, and 1 as severe, with incidents occurring across multiple years between 2011 and 2026. 
+
+Supporting details from the incident narratives illustrate several common circumstances:
+
+### Directional Drilling and Fiber/Utility Installation
+* **Horizontal directional drilling:** Several incidents involved contractors installing fiber optic lines or sewers who struck distribution mains while boring underground. In some cases, excavators failed to visually verify or ""pothole"" the pipe's location prior to drilling [GD-20110058], [GD-20220062], [GD-20260040], [GD-20260048].
+* **Explosions and fires:** In Girard, horizontal directional drilling for fiber struck a 6-inch plastic mainline, leading to a house explosion and fire that resulted in 29 structural evacuations [GD-20260040]. Another drilling strike during fiber optic installation led to a pressurized gas release and an explosion while responders were assessing the site [GD-20260048].
+
+### Road Construction and Heavy Equipment
+* **Mechanical excavation equipment:** Excavators frequently struck distribution mains while carrying out road or infrastructure projects. In one case, a roadwork contractor elected to use powered equipment rather than hand digging in close proximity to a marked 20-inch pipeline [GD-20200125].
+* **Equipment sinkage and grinding:** During road stabilization work, a machine sank into the ground, hit a 12-inch steel line, and ignited escaping gas, resulting in injuries [GD-20200110]. In another incident, a contractor grinding pavement without an active One Call ticket struck a 2-inch steel main, causing a fire under the machine [GD-20160098]. Other road improvement projects similarly resulted in strikes to large-diameter distribution lines [GD-20130080].
+
+### Other Excavation and Utility Work
+* **Auger and sewer digging:** An auger truck installing fence posts penetrated a 6-inch plastic main and caught fire [GD-20260051]. During sewer installation in Salem, a contractor exposed an abandoned gas line, assumed it was the only line present, and continued digging, striking the active 10-inch main [GD-20200078].
+* **Building damage:** In Fairborn, excavation work around a service line was preliminarily found to have fractured a pipe at a basement wall, allowing gas to migrate into a duplex and trigger an explosion that leveled the structure [GD-20110395].
+
+### Locating and Marking Issues
+* **Unmarked or mis-marked lines:** A number of strikes occurred where facilities were either not marked, bypassed without active records, or mis-marked by locating contractors prior to excavation [GD-20130080], [GD-20220044], [GD-20260040], [GD-20260051].
+* **Disregarded markings:** In other events, the gas mains were accurately marked, but excavators failed to observe proper clearance or dig test holes to verify depth before operating heavy machinery [GD-20200078], [GD-20200125], [GD-20220062].","Yes, there have been 28 reported excavation damage incidents involving gas distribution pipelines in Ohio. Across all 28 incidents, 13 were classified as moderate severity, 12 as minor, 2 as critical, and 1 as severe, with incidents occurring across multiple years between 2011 and 2026. 
+
+Supporting details from the incident narratives illustrate several common circumstances:
+
+### Directional Drilling and Fiber/Utility Installation
+* **Horizontal directional drilling:** Several incidents involved contractors installing fiber optic lines or sewers who struck distribution mains while boring underground. In some cases, excavators failed to visually verify or ""pothole"" the pipe's location prior to drilling [GD-20110058], [GD-20220062], [GD-20260040], [GD-20260048].
+* **Explosions and fires:** In Girard, horizontal directional drilling for fiber struck a 6-inch plastic mainline, leading to a house explosion and fire that resulted in 29 structural evacuations [GD-20260040]. Another drilling strike during fiber optic installation led to a pressurized gas release and an explosion while responders were assessing the site [GD-20260048].
+
+### Road Construction and Heavy Equipment
+* **Mechanical excavation equipment:** Excavators frequently struck distribution mains while carrying out road or infrastructure projects. In one case, a roadwork contractor elected to use powered equipment rather than hand digging in close proximity to a marked 20-inch pipeline [GD-20200125].
+* **Equipment sinkage and grinding:** During road stabilization work, a machine sank into the ground, hit a 12-inch steel line, and ignited escaping gas, resulting in injuries [GD-20200110]. In another incident, a contractor grinding pavement without an active One Call ticket struck a 2-inch steel main, causing a fire under the machine [GD-20160098]. Other road improvement projects similarly resulted in strikes to large-diameter distribution lines [GD-20130080].
+
+### Other Excavation and Utility Work
+* **Auger and sewer digging:** An auger truck installing fence posts penetrated a 6-inch plastic main and caught fire [GD-20260051]. During sewer installation in Salem, a contractor exposed an abandoned gas line, assumed it was the only line present, and continued digging, striking the active 10-inch main [GD-20200078].
+* **Building damage:** In Fairborn, excavation work around a service line was preliminarily found to have fractured a pipe at a basement wall, allowing gas to migrate into a duplex and trigger an explosion that leveled the structure [GD-20110395].
+
+### Locating and Marking Issues
+* **Unmarked or mis-marked lines:** A number of strikes occurred where facilities were either not marked, bypassed without active records, or mis-marked by locating contractors prior to excavation [GD-20130080], [GD-20220044], [GD-20260040], [GD-20260051].
+* **Disregarded markings:** In other events, the gas mains were accurately marked, but excavators failed to observe proper clearance or dig test holes to verify depth before operating heavy machinery [GD-20200078], [GD-20200125], [GD-20220062]."
+q11,what incorrect operation incidents happened in louisiana in 2019?,lowercase input,state in ['LA']; cause in ['INCORRECT OPERATION']; year >= 2019; year <= 2019,6,state in ['LA']; cause in ['INCORRECT OPERATION']; year >= 2019; year <= 2019,True,True,True,True,True,True,6,True,6,1.0,True,True,,True,,,"In 2019, there were 6 pipeline incidents caused by incorrect operations in Louisiana, including 5 minor incidents and 1 moderate incident. These events primarily involved maintenance and installation errors, improper valve positioning or procedural deficiencies during pigging operations, and an inadvertent discharge during construction.
+
+### Maintenance and Installation Errors
+* **Damaged Pump Seals and Fire:** During maintenance on an ethylene pump, replacement seals were likely damaged during installation by a contractor [HL-20190055]. Upon restarting the pump, ethylene leaked and underwent thermal decomposition, resulting in a fire around the pump before it shut down via emergency shutdown (ESD) due to vibration [HL-20190055].
+* **Overtightened Tubing Fitting:** At the St. Martinville station, personnel discovered crude oil misting from a failed small-diameter tubing connection on top of a pump [HL-20190374]. An investigation revealed the fitting had been overtightened during construction earlier that year, causing the sealing point to mushroom and eventually crack from pump vibrations, releasing about 1 barrel of crude [HL-20190374].
+* **Incorrect Valve Selection During Troubleshooting:** While troubleshooting an inactive meter on the Finney Pipeline, a maintenance manager instructed a field operator over the phone to open an incorrect valve [HL-20200015]. Opening the valve routed oil to the sump, overflowing 3 barrels onto the ground [HL-20200015].
+
+### Pigging Operations and Valve Alignments
+* **Pig Trap Door Separation:** During routine pigging operations at the Geismar Pump Station, workers dislodged a stuck pig, which forced the pig trap door to break away from the enclosure [HL-20190034]. Pigs were ejected and product was released to the atmosphere; the investigation determined the operating procedure lacked guidance on safely dislodging stuck pigs [HL-20190034].
+* **Drip Pan Overflow:** At a pig trap facility, crude oil leaked past an isolation valve and overflowed from a drip pan because the drain valve was partially open (hung up on its locking pin) and another drip pan valve had been left open [HL-20190270]. An estimated 5 barrels were released within secondary containment [HL-20190270].
+
+### Construction and Pipeline Tie-ins
+* **Water and Kerosene Release:** While preparing a tie-in on a pipeline segment in Lake Borgne, a construction crew pumped water into the pipe to reduce buoyancy and clear an air pocket [HL-20190085]. This displaced a slug of water and residual kerosene out of the open end of the pipe into the lake, where it was contained by pre-deployed booms [HL-20190085].","In 2019, there were 6 pipeline incidents caused by incorrect operations in Louisiana, including 5 minor incidents and 1 moderate incident. These events primarily involved maintenance and installation errors, improper valve positioning or procedural deficiencies during pigging operations, and an inadvertent discharge during construction.
+
+### Maintenance and Installation Errors
+* **Damaged Pump Seals and Fire:** During maintenance on an ethylene pump, replacement seals were likely damaged during installation by a contractor [HL-20190055]. Upon restarting the pump, ethylene leaked and underwent thermal decomposition, resulting in a fire around the pump before it shut down via emergency shutdown (ESD) due to vibration [HL-20190055].
+* **Overtightened Tubing Fitting:** At the St. Martinville station, personnel discovered crude oil misting from a failed small-diameter tubing connection on top of a pump [HL-20190374]. An investigation revealed the fitting had been overtightened during construction earlier that year, causing the sealing point to mushroom and eventually crack from pump vibrations, releasing about 1 barrel of crude [HL-20190374].
+* **Incorrect Valve Selection During Troubleshooting:** While troubleshooting an inactive meter on the Finney Pipeline, a maintenance manager instructed a field operator over the phone to open an incorrect valve [HL-20200015]. Opening the valve routed oil to the sump, overflowing 3 barrels onto the ground [HL-20200015].
+
+### Pigging Operations and Valve Alignments
+* **Pig Trap Door Separation:** During routine pigging operations at the Geismar Pump Station, workers dislodged a stuck pig, which forced the pig trap door to break away from the enclosure [HL-20190034]. Pigs were ejected and product was released to the atmosphere; the investigation determined the operating procedure lacked guidance on safely dislodging stuck pigs [HL-20190034].
+* **Drip Pan Overflow:** At a pig trap facility, crude oil leaked past an isolation valve and overflowed from a drip pan because the drain valve was partially open (hung up on its locking pin) and another drip pan valve had been left open [HL-20190270]. An estimated 5 barrels were released within secondary containment [HL-20190270].
+
+### Construction and Pipeline Tie-ins
+* **Water and Kerosene Release:** While preparing a tie-in on a pipeline segment in Lake Borgne, a construction crew pumped water into the pipe to reduce buoyancy and clear an air pocket [HL-20190085]. This displaced a slug of water and residual kerosene out of the open end of the pipe into the lake, where it was contained by pre-deployed booms [HL-20190085]."
+q12,How many pipeline incidents occurred in New Mexico from 2015 through 2020?,"'from X through Y', two-word state",state in ['NM']; year >= 2015; year <= 2020,91,state in ['NM']; year >= 2015; year <= 2020,True,True,True,True,True,True,91,True,12,1.0,True,True,,True,,True,"A total of **91** pipeline incidents occurred in New Mexico from 2015 through 2020. Incident activity peaked in 2017 with 19 incidents, followed by a slight decline to 12 incidents by 2020. The vast majority of these events were classified as minor in severity.
+
+### Annual Distribution
+* **2015:** 16 incidents
+* **2016:** 14 incidents
+* **2017:** 19 incidents
+* **2018:** 16 incidents
+* **2019:** 14 incidents
+* **2020:** 12 incidents
+
+### Incident Causes
+* **Equipment Failure (39 incidents):** The leading cause of pipeline incidents, including issues such as failed clock spring reinforcements [HL-20190081].
+* **Incorrect Operation (20 incidents):** The second most frequent cause, involving operational mishaps such as crude oil overtopping a frac tank during filling [HL-20150161].
+* **Corrosion Failure (11 incidents):** Resulted in pipeline ruptures and product releases [GTG-20190106].
+* **Material Failure of Pipe or Weld (10 incidents):** Included issues such as vibration-induced weld cracking [HL-20180297], lack of fusion in welds [HL-20170127], and girth weld cracks [GTG-20180033].
+* **Excavation Damage (6 incidents):** Included third-party contractor strikes [GTG-20180055] and utility drilling strikes that damaged distribution mains [GD-20180010].
+* **Natural Force Damage (3 incidents):** Included environmental impacts such as lightning strikes [HL-20190235].
+* **Other Incident Cause (2 incidents)**
+
+### Severity Breakdown
+* **Minor:** 83 incidents
+* **Moderate:** 7 incidents
+* **Critical:** 1 incident","A total of **91** pipeline incidents occurred in New Mexico from 2015 through 2020. Incident activity peaked in 2017 with 19 incidents, followed by a slight decline to 12 incidents by 2020. The vast majority of these events were classified as minor in severity.
+
+### Annual Distribution
+* **2015:** 16 incidents
+* **2016:** 14 incidents
+* **2017:** 19 incidents
+* **2018:** 16 incidents
+* **2019:** 14 incidents
+* **2020:** 12 incidents
+
+### Incident Causes
+* **Equipment Failure (39 incidents):** The leading cause of pipeline incidents, including issues such as failed clock spring reinforcements [HL-20190081].
+* **Incorrect Operation (20 incidents):** The second most frequent cause, involving operational mishaps such as crude oil overtopping a frac tank during filling [HL-20150161].
+* **Corrosion Failure (11 incidents):** Resulted in pipeline ruptures and product releases [GTG-20190106].
+* **Material Failure of Pipe or Weld (10 incidents):** Included issues such as vibration-induced weld cracking [HL-20180297], lack of fusion in welds [HL-20170127], and girth weld cracks [GTG-20180033].
+* **Excavation Damage (6 incidents):** Included third-party contractor strikes [GTG-20180055] and utility drilling strikes that damaged distribution mains [GD-20180010].
+* **Natural Force Damage (3 incidents):** Included environmental impacts such as lightning strikes [HL-20190235].
+* **Other Incident Cause (2 incidents)**
+
+### Severity Breakdown
+* **Minor:** 83 incidents
+* **Moderate:** 7 incidents
+* **Critical:** 1 incident"
+q13,What caused gas transmission incidents in Kansas?,'what caused' must not set a cause filter,state in ['KS']; system type in ['GAS TRANSMISSION GATHERING'],50,state in ['KS']; system type in ['GAS TRANSMISSION GATHERING'],True,True,True,True,True,True,50,True,12,1.0,True,True,,True,,,"Across the 50 gas transmission and gathering incidents recorded in Kansas, the leading cause was equipment failure, accounting for 17 incidents. Pipe and structural integrity issues were also frequent, led by material failure of pipe or weld (9 incidents) and corrosion failure (8 incidents). The remaining events were caused by incorrect operation (4), excavation damage (4), other outside force damage (4), other incident causes (3), and natural force damage (1).
+
+### Equipment Failure (17 Incidents)
+Equipment failure was the most frequent incident cause in Kansas. Multiple incidents involved relief valve and pressure control issues:
+* **Relief Valve Malfunctions and Contamination:** Operators experienced relief valves blowing gas or failing open due to environmental conditions and internal contamination. For example, sub-freezing temperatures caused liquids inside a valve pilot to freeze and trigger a relief valve opening [GTG-20220007]. In other cases, pilots or regulators malfunctioned after accumulating oil, moisture, or dirt, causing pressure releases and prompting local evacuations [GTG-20110024], [GTG-20120002], or requiring valve replacement [GTG-20140059].
+* **Station Power and Control Issues:** At the Welda Compressor Station, a power surge tripped station breakers and battery backup chargers; once backup power depleted, an emergency shutdown (ESD) was initiated, and debris in an ESD signal line prevented gates from closing properly [GTG-20150072].
+
+### Pipe, Weld, and Corrosion Failures
+* **Material Failure of Pipe or Weld (9 Incidents):** Structural and weld failures led to pressure losses and line isolations, such as a rupture on a transmission line in Reno County that prompted a response from local emergency crews [GTG-20100006].
+* **Corrosion Failure (8 Incidents):** Corrosion degradation accounted for 8 total incidents across the state.
+
+### Outside Force and Excavation Damage
+* **Excavation Damage (4 Incidents):** Third-party work caused pipeline strikes, such as a contractor operating a scraper that removed approximately 36 inches of dirt before hitting a marked 4-inch transmission line [GTG-20200128].
+* **Other Outside Force Damage (4 Incidents):** External physical impacts included a communications tower falling and striking a 1-inch weld-o-let feeding a measurement transmitter [GTG-20150144], as well as a downed electrical utility line energizing pipeline station grounding wires and sparking a fire [GTG-20130075].
+* **Natural Force Damage (1 Incident):** Environmental or natural forces caused 1 incident.
+
+### Other Causes and Operational Errors
+* **Incorrect Operation (4 Incidents):** Operator or procedural errors resulted in 4 incidents.
+* **Other Incident Causes (3 Incidents):** Unclassified causes included an incident where a bird built a nest inside an ESD control box and perched on the trip handle to trigger an unintended gas release [GTG-20250065], a compressor station auxiliary room fire of undetermined origin [GTG-20140012], and an unconfirmed leak origin on an exposed line beneath a creek bed [GTG-20150033].","Across the 50 gas transmission and gathering incidents recorded in Kansas, the leading cause was equipment failure, accounting for 17 incidents. Pipe and structural integrity issues were also frequent, led by material failure of pipe or weld (9 incidents) and corrosion failure (8 incidents). The remaining events were caused by incorrect operation (4), excavation damage (4), other outside force damage (4), other incident causes (3), and natural force damage (1).
+
+### Equipment Failure (17 Incidents)
+Equipment failure was the most frequent incident cause in Kansas. Multiple incidents involved relief valve and pressure control issues:
+* **Relief Valve Malfunctions and Contamination:** Operators experienced relief valves blowing gas or failing open due to environmental conditions and internal contamination. For example, sub-freezing temperatures caused liquids inside a valve pilot to freeze and trigger a relief valve opening [GTG-20220007]. In other cases, pilots or regulators malfunctioned after accumulating oil, moisture, or dirt, causing pressure releases and prompting local evacuations [GTG-20110024], [GTG-20120002], or requiring valve replacement [GTG-20140059].
+* **Station Power and Control Issues:** At the Welda Compressor Station, a power surge tripped station breakers and battery backup chargers; once backup power depleted, an emergency shutdown (ESD) was initiated, and debris in an ESD signal line prevented gates from closing properly [GTG-20150072].
+
+### Pipe, Weld, and Corrosion Failures
+* **Material Failure of Pipe or Weld (9 Incidents):** Structural and weld failures led to pressure losses and line isolations, such as a rupture on a transmission line in Reno County that prompted a response from local emergency crews [GTG-20100006].
+* **Corrosion Failure (8 Incidents):** Corrosion degradation accounted for 8 total incidents across the state.
+
+### Outside Force and Excavation Damage
+* **Excavation Damage (4 Incidents):** Third-party work caused pipeline strikes, such as a contractor operating a scraper that removed approximately 36 inches of dirt before hitting a marked 4-inch transmission line [GTG-20200128].
+* **Other Outside Force Damage (4 Incidents):** External physical impacts included a communications tower falling and striking a 1-inch weld-o-let feeding a measurement transmitter [GTG-20150144], as well as a downed electrical utility line energizing pipeline station grounding wires and sparking a fire [GTG-20130075].
+* **Natural Force Damage (1 Incident):** Environmental or natural forces caused 1 incident.
+
+### Other Causes and Operational Errors
+* **Incorrect Operation (4 Incidents):** Operator or procedural errors resulted in 4 incidents.
+* **Other Incident Causes (3 Incidents):** Unclassified causes included an incident where a bird built a nest inside an ESD control box and perched on the trip handle to trigger an unintended gas release [GTG-20250065], a compressor station auxiliary room fire of undetermined origin [GTG-20140012], and an unconfirmed leak origin on an exposed line beneath a creek bed [GTG-20150033]."
+q14,"Tell me about outside force damage, like vehicles striking pipelines, in Illinois.",near-miss category (outside force vs natural force),state in ['IL']; cause in ['OTHER OUTSIDE FORCE DAMAGE'],26,state in ['IL']; cause in ['OTHER OUTSIDE FORCE DAMAGE'],True,True,True,True,True,True,26,True,12,1.0,True,True,,True,,,"In Illinois, there have been 26 pipeline incidents attributed to ""Other Outside Force Damage."" These events range in severity, comprising 11 moderate, 9 minor, 4 critical, and 2 severe incidents, with the highest concentration occurring in 2010 (8 incidents). While many of these incidents involve motor vehicles crashing into aboveground gas infrastructure such as meter sets and regulator stations, the category also includes external hazards like downed electrical power lines and mowing equipment strikes.
+
+### Vehicle Collisions with Meter Sets and Residential/Commercial Structures
+Multiple incidents involved drivers losing control of their vehicles, leaving the roadway, and striking gas meter sets attached to buildings:
+* **Severe Building Collisions and Fires:** In Harvey, an incident involving street racing resulted in a vehicle crossing into oncoming traffic and striking a gas meter outside a temple, causing severe structural damage, igniting the vehicle and meter set, and injuring four passengers [GD-20240060]. In another incident, a vehicle driven by an impaired driver crashed through a meter set and came to rest entirely inside a home, causing a gas fire that killed a resident inside [GD-20190148].
+* **Commercial and Residential Impacts:** Vehicles have also struck meters under various other circumstances, including an SUV traveling over 200 yards off-road before hitting a house and meter set [GD-20130127], a bank drive-thru customer crashing through a brick wall and meter set to ignite a fire [GD-20230010], a van slipping out of gear in a driveway [GD-20130115], and a vehicle jumping a curb and hitting a fence before damaging a building's meter set [GD-20100105].
+
+### Vehicle Strikes on Regulator Stations and System Outages
+Collisions with aboveground regulating stations have resulted in significant facility damage and customer supply interruptions:
+* In Georgetown, a car traveled roughly 261 feet off the road into a fenced regulator station, igniting upon impact and resulting in fatal injuries to both vehicle occupants; shutting down the supply cut service to 1,330 gas customers [GD-20230043].
+* In another event, a driver experiencing a medical emergency struck an aboveground regulating facility, causing emergency repairs and interrupting service to 98 customers [GD-20190105].
+
+### Other Outside Force Events: Electrical Arcing and Equipment Strikes
+Outside force damage in Illinois also extends to physical interference beyond motor vehicle crashes:
+* **Downed Power Lines:** In multiple hazardous liquid pipeline incidents, fallen high-voltage electrical wires caused high-current electrical arcing that melted holes through pipe walls, resulting in product releases and fires [HL-20110329, HL-20140140, HL-20140271].
+* **Maintenance Equipment:** In Sharpsburg, a third party struck a hazardous liquid pipeline while mowing, resulting in a release of approximately 840 gallons of gasoline [HL-20110341].","In Illinois, there have been 26 pipeline incidents attributed to ""Other Outside Force Damage."" These events range in severity, comprising 11 moderate, 9 minor, 4 critical, and 2 severe incidents, with the highest concentration occurring in 2010 (8 incidents). While many of these incidents involve motor vehicles crashing into aboveground gas infrastructure such as meter sets and regulator stations, the category also includes external hazards like downed electrical power lines and mowing equipment strikes.
+
+### Vehicle Collisions with Meter Sets and Residential/Commercial Structures
+Multiple incidents involved drivers losing control of their vehicles, leaving the roadway, and striking gas meter sets attached to buildings:
+* **Severe Building Collisions and Fires:** In Harvey, an incident involving street racing resulted in a vehicle crossing into oncoming traffic and striking a gas meter outside a temple, causing severe structural damage, igniting the vehicle and meter set, and injuring four passengers [GD-20240060]. In another incident, a vehicle driven by an impaired driver crashed through a meter set and came to rest entirely inside a home, causing a gas fire that killed a resident inside [GD-20190148].
+* **Commercial and Residential Impacts:** Vehicles have also struck meters under various other circumstances, including an SUV traveling over 200 yards off-road before hitting a house and meter set [GD-20130127], a bank drive-thru customer crashing through a brick wall and meter set to ignite a fire [GD-20230010], a van slipping out of gear in a driveway [GD-20130115], and a vehicle jumping a curb and hitting a fence before damaging a building's meter set [GD-20100105].
+
+### Vehicle Strikes on Regulator Stations and System Outages
+Collisions with aboveground regulating stations have resulted in significant facility damage and customer supply interruptions:
+* In Georgetown, a car traveled roughly 261 feet off the road into a fenced regulator station, igniting upon impact and resulting in fatal injuries to both vehicle occupants; shutting down the supply cut service to 1,330 gas customers [GD-20230043].
+* In another event, a driver experiencing a medical emergency struck an aboveground regulating facility, causing emergency repairs and interrupting service to 98 customers [GD-20190105].
+
+### Other Outside Force Events: Electrical Arcing and Equipment Strikes
+Outside force damage in Illinois also extends to physical interference beyond motor vehicle crashes:
+* **Downed Power Lines:** In multiple hazardous liquid pipeline incidents, fallen high-voltage electrical wires caused high-current electrical arcing that melted holes through pipe walls, resulting in product releases and fires [HL-20110329, HL-20140140, HL-20140271].
+* **Maintenance Equipment:** In Sharpsburg, a third party struck a hazardous liquid pipeline while mowing, resulting in a release of approximately 840 gallons of gasoline [HL-20110341]."
+q15,How many corrosion or material failure incidents were reported for gas distribution systems?,multi-cause OR,"system type in ['GAS DISTRIBUTION']; cause in ['CORROSION FAILURE', 'MATERIAL FAILURE OF PIPE OR WELD']",140,"system type in ['GAS DISTRIBUTION']; cause in ['CORROSION FAILURE', 'MATERIAL FAILURE OF PIPE OR WELD']",True,True,True,True,True,True,140,True,12,1.0,True,True,,True,,True,"A total of **140** corrosion or material failure incidents have been reported for gas distribution systems. Among these, 102 incidents were attributed to material failure of pipe or weld, while 38 were caused by corrosion failure. 
+
+### Cause and Severity Breakdown
+* **Primary Causes:** Material failure of pipe or weld accounted for the majority of the incidents with 102 reports, compared to 38 reports caused by corrosion failure.
+* **Incident Severity:** Incidents ranged across all severity classifications, categorized as:
+  * Minor: 49
+  * Severe: 43
+  * Moderate: 39
+  * Critical: 9
+
+### Geographic Distribution
+Incidents occurred across multiple states, with the highest concentrations in:
+* California: 18
+* Texas: 18
+* Ohio: 15
+* New York: 9
+* Michigan: 7
+* Missouri: 7
+* Nevada: 7
+* Colorado: 6
+* Pennsylvania: 6
+* Illinois: 5
+
+### Annual Trends
+Reported incidents peaked between 2016 and 2019, with the highest single-year total occurring in 2018 (15 incidents):
+* **2010–2014:** 10 in 2010, 11 in 2011, 7 in 2012, 10 in 2013, and 9 in 2014.
+* **2015–2019:** 4 in 2015, 12 in 2016, 13 in 2017, 15 in 2018, and 12 in 2019.
+* **2020–2026:** 9 in 2020, 8 in 2021, 7 in 2022, 3 in 2023, 2 in 2024, 5 in 2025, and 3 in 2026.
+
+### Incident Characteristics and Examples
+* **Corrosion Failures:** Multiple incidents involved corrosion perforating distribution piping. For example, pinhole leaks and wall degradation on steel mains have required line isolations and pipe replacements [GD-20110385], while in other instances, migrated gas from corrosion leaks entered structures and ignited, causing structural destruction or personal injury [GD-20100057], [GD-20210075], [GD-20260028]. In one case, extensive corrosion across an entire steel distribution network prompted the complete shut-in and replacement of the community system [GD-20210040]. Another corrosion repair attempt on cast iron resulted in an operative becoming unresponsive due to blowing gas [GD-20110377].
+* **Material and Joint Failures:** Pipe and joint separations have led to gas migration and evacuations, such as a 3/16-inch separation in a joint on a 6-inch low-pressure steel main that migrated into nearby homes [GD-20130025]. In other cases, failures occurred during repair or valve operations, including brittle fractures on threaded service pipe connections [GD-20180051] and axial fractures linked to internal thermal-oxidative degradation [GD-20220079].","A total of **140** corrosion or material failure incidents have been reported for gas distribution systems. Among these, 102 incidents were attributed to material failure of pipe or weld, while 38 were caused by corrosion failure. 
+
+### Cause and Severity Breakdown
+* **Primary Causes:** Material failure of pipe or weld accounted for the majority of the incidents with 102 reports, compared to 38 reports caused by corrosion failure.
+* **Incident Severity:** Incidents ranged across all severity classifications, categorized as:
+  * Minor: 49
+  * Severe: 43
+  * Moderate: 39
+  * Critical: 9
+
+### Geographic Distribution
+Incidents occurred across multiple states, with the highest concentrations in:
+* California: 18
+* Texas: 18
+* Ohio: 15
+* New York: 9
+* Michigan: 7
+* Missouri: 7
+* Nevada: 7
+* Colorado: 6
+* Pennsylvania: 6
+* Illinois: 5
+
+### Annual Trends
+Reported incidents peaked between 2016 and 2019, with the highest single-year total occurring in 2018 (15 incidents):
+* **2010–2014:** 10 in 2010, 11 in 2011, 7 in 2012, 10 in 2013, and 9 in 2014.
+* **2015–2019:** 4 in 2015, 12 in 2016, 13 in 2017, 15 in 2018, and 12 in 2019.
+* **2020–2026:** 9 in 2020, 8 in 2021, 7 in 2022, 3 in 2023, 2 in 2024, 5 in 2025, and 3 in 2026.
+
+### Incident Characteristics and Examples
+* **Corrosion Failures:** Multiple incidents involved corrosion perforating distribution piping. For example, pinhole leaks and wall degradation on steel mains have required line isolations and pipe replacements [GD-20110385], while in other instances, migrated gas from corrosion leaks entered structures and ignited, causing structural destruction or personal injury [GD-20100057], [GD-20210075], [GD-20260028]. In one case, extensive corrosion across an entire steel distribution network prompted the complete shut-in and replacement of the community system [GD-20210040]. Another corrosion repair attempt on cast iron resulted in an operative becoming unresponsive due to blowing gas [GD-20110377].
+* **Material and Joint Failures:** Pipe and joint separations have led to gas migration and evacuations, such as a 3/16-inch separation in a joint on a 6-inch low-pressure steel main that migrated into nearby homes [GD-20130025]. In other cases, failures occurred during repair or valve operations, including brittle fractures on threaded service pipe connections [GD-20180051] and axial fractures linked to internal thermal-oxidative degradation [GD-20220079]."
+q16,What happened in hazardous liquid incidents in North Dakota since 2010?,year at or before data start,state in ['ND']; system type in ['HAZARDOUS LIQUID']; year >= 2010,119,state in ['ND']; system type in ['HAZARDOUS LIQUID']; year >= 2010,True,True,True,True,True,True,119,True,12,1.0,True,True,,True,,,"Since 2010, North Dakota experienced 119 hazardous liquid pipeline incidents, the vast majority of which were classified as minor (113 incidents), with 6 categorized as moderate. Equipment failure was the leading cause by a wide margin, accounting for 63 incidents, followed by incorrect operations (15), material failures of pipe or weld (12), natural force damage (11), excavation damage (9), corrosion failure (6), and other outside force damage (3). Annual incident counts peaked in 2018 at 18 incidents, with other notable peaks in 2017 (11 incidents), 2013 (10), and 2014 (10).
+
+### Equipment Failures
+Accounting for over half of all incidents (63), equipment failures frequently involved pump components, instrumentation connections, and valves:
+* **Vibration and Fitting Failures:** Excessive vibration and heat at pumps caused cracked nipples and ruptured instrument connections, such as cracked nipples on charge pump outlets leading to pressure gauges [HL-20120185], [HL-20100086]. In another instance, fatigue cracking from pump vibration and inadequate support ruptured a 1-inch thermal relief pipe, spilling diesel [HL-20240169].
+* **Pump Seals and Associated Fires:** Low suction pressure and cavitation caused pump seal collar failures that generated friction and heat, triggering small fires within pump rooms [HL-20250158]. Other seal or packing failures caused releases when sump float switches failed to trigger control room alarms [HL-20200200].
+* **Valve Failures:** Crude oil releases also resulted from component integrity failures on piping, such as crude oil spraying directly from the valve body of a 1-inch ball valve on low-pressure pump suction lines [HL-20190340].
+
+### Incorrect Operation and Human Error
+Operator errors and procedural lapses accounted for 15 incidents, often occurring during maintenance, isolation, or valve alignments:
+* **Valve Misalignment and Distraction:** At one facility, an operator distracted by an arriving truck driver opened a tank valve instead of closing it, resulting in a 610-barrel crude oil overflow into secondary containment [HL-20170192]. In other cases, valves used for venting or draining were inadvertently left open when lines or pumps were refilled, leading to releases and overflowing sumps [HL-20180036], [HL-20130379].
+* **Inadequate Isolation Tools and Vapor Ignitions:** Multiple incidents involved improper vapor isolation plugs during hot work. In one case, a contractor was injured when welding flames ignited vapors passing through an inappropriate foreman's plug, blowing the plug out of the pipe [HL-20140318]. In another incident, a mechanical isolation tool failed to seal off product vapor during pipe beveling, resulting in a flash fire and vapor ignition [HL-20210204].
+* **Testing and Maintenance Deficiencies:** Incomplete valve closures or seeps occurred after hydrostatic testing due to internal ice buildup that compromised valve seating, allowing product to escape through unplugged openings [HL-20130017].
+
+### Other Causes
+The remaining incidents in North Dakota were attributed to:
+* **Material Failure of Pipe or Weld:** 12 incidents.
+* **Natural Force Damage:** 11 incidents.
+* **Excavation Damage:** 9 incidents.
+* **Corrosion Failure:** 6 incidents.
+* **Other Outside Force Damage:** 3 incidents.","Since 2010, North Dakota experienced 119 hazardous liquid pipeline incidents, the vast majority of which were classified as minor (113 incidents), with 6 categorized as moderate. Equipment failure was the leading cause by a wide margin, accounting for 63 incidents, followed by incorrect operations (15), material failures of pipe or weld (12), natural force damage (11), excavation damage (9), corrosion failure (6), and other outside force damage (3). Annual incident counts peaked in 2018 at 18 incidents, with other notable peaks in 2017 (11 incidents), 2013 (10), and 2014 (10).
+
+### Equipment Failures
+Accounting for over half of all incidents (63), equipment failures frequently involved pump components, instrumentation connections, and valves:
+* **Vibration and Fitting Failures:** Excessive vibration and heat at pumps caused cracked nipples and ruptured instrument connections, such as cracked nipples on charge pump outlets leading to pressure gauges [HL-20120185], [HL-20100086]. In another instance, fatigue cracking from pump vibration and inadequate support ruptured a 1-inch thermal relief pipe, spilling diesel [HL-20240169].
+* **Pump Seals and Associated Fires:** Low suction pressure and cavitation caused pump seal collar failures that generated friction and heat, triggering small fires within pump rooms [HL-20250158]. Other seal or packing failures caused releases when sump float switches failed to trigger control room alarms [HL-20200200].
+* **Valve Failures:** Crude oil releases also resulted from component integrity failures on piping, such as crude oil spraying directly from the valve body of a 1-inch ball valve on low-pressure pump suction lines [HL-20190340].
+
+### Incorrect Operation and Human Error
+Operator errors and procedural lapses accounted for 15 incidents, often occurring during maintenance, isolation, or valve alignments:
+* **Valve Misalignment and Distraction:** At one facility, an operator distracted by an arriving truck driver opened a tank valve instead of closing it, resulting in a 610-barrel crude oil overflow into secondary containment [HL-20170192]. In other cases, valves used for venting or draining were inadvertently left open when lines or pumps were refilled, leading to releases and overflowing sumps [HL-20180036], [HL-20130379].
+* **Inadequate Isolation Tools and Vapor Ignitions:** Multiple incidents involved improper vapor isolation plugs during hot work. In one case, a contractor was injured when welding flames ignited vapors passing through an inappropriate foreman's plug, blowing the plug out of the pipe [HL-20140318]. In another incident, a mechanical isolation tool failed to seal off product vapor during pipe beveling, resulting in a flash fire and vapor ignition [HL-20210204].
+* **Testing and Maintenance Deficiencies:** Incomplete valve closures or seeps occurred after hydrostatic testing due to internal ice buildup that compromised valve seating, allowing product to escape through unplugged openings [HL-20130017].
+
+### Other Causes
+The remaining incidents in North Dakota were attributed to:
+* **Material Failure of Pipe or Weld:** 12 incidents.
+* **Natural Force Damage:** 11 incidents.
+* **Excavation Damage:** 9 incidents.
+* **Corrosion Failure:** 6 incidents.
+* **Other Outside Force Damage:** 3 incidents."
+q17,What incidents occurred in Michigan in 2016 and 2017?,'in A and B' as a range,state in ['MI']; year >= 2016; year <= 2017,34,state in ['MI']; year >= 2016; year <= 2017,True,True,True,True,True,True,34,True,12,1.0,True,True,,True,,,"A total of 34 pipeline incidents occurred in Michigan across 2016 and 2017, with 15 incidents in 2016 and 19 in 2017. The leading causes were equipment failure (8 incidents) and other outside force damage (8 incidents), followed by incorrect operation (6), excavation damage (5), material failure of pipe or weld (5), and other incident causes (2). Most incidents were classified as minor (23), alongside 6 moderate and 5 severe incidents.
+
+### Outside Force Damage
+Vehicle collisions and external fires triggered several significant incidents:
+* **Vehicle Impacts:** In Melvindale, a vehicle struck above-ground piping on a blow-off at a DTE Gas facility, rupturing a 30-inch pipeline operating at 540 psig, causing an ignition, injuring the driver, and interrupting high-pressure gas service to local industrial customers and a hospital [GD-20160064]. In Hartland Township, a car left the road and struck an electric and gas meter pedestal, igniting gas, damaging a home, and injuring the driver [GD-20160061].
+* **External Ground and Fire Events:** In Lansing, a house fire caused by discarded cigarette ashes in mulch spread to a residential gas meter, igniting natural gas and resulting in hospitalizations for two residents [GD-20170073]. In Davison, a nearby water main installation project and soil settling contributed to a flange separation on a gas distribution main [GD-20170077]. On a hazardous liquid system, an equipment operator clearing trees got stuck over a Wolverine Pipe Line right-of-way, resulting in a diesel fuel release [HL-20160202].
+
+### Excavation Damage
+Excavation activities led to pipeline strikes on transmission and distribution networks:
+* In Livonia, a contractor conducting pipeline integrity work hit a 4-inch bypass welded to a 10-inch high-pressure pipeline with an excavator, causing the weld to crack and release gas [GTG-20160087].
+* In Imlay City, an excavator struck a 4-inch plastic gas pipeline before restaking was completed, causing blowing gas and prompting the evacuation of 10 residences and 7 businesses [GD-20160062].
+
+### Incorrect Operation
+Operational and procedural errors led to releases and ignitions:
+* At the Detroit Metro Terminal, an operator failed to verify valve alignment after water checks, exposing check valves to tank head pressure and causing jet fuel to overflow into containment [HL-20170037].
+* At the St. Clair Compressor Station in Ira Township, a blow-down silencer ignited during start-up testing due to electrostatic discharge from entrained water droplets in the gas stream [GTG-20170081].
+
+### Equipment Failure
+* At the Lansing City Gate, regulator station failure caused by an influx of mid-range and heavy hydrocarbons led to overpressurization and the discharge of natural gas and an oily substance through a relief valve, affecting neighboring fields and homes [GD-20170096].
+
+### Other Incident Causes
+* In Detroit, investigations into two residential explosions and fires—one in July 2016 resulting in an injured occupant [GD-20160068], and another in 2017 [GD-20170095]—concluded with the initial causes remaining unknown.","A total of 34 pipeline incidents occurred in Michigan across 2016 and 2017, with 15 incidents in 2016 and 19 in 2017. The leading causes were equipment failure (8 incidents) and other outside force damage (8 incidents), followed by incorrect operation (6), excavation damage (5), material failure of pipe or weld (5), and other incident causes (2). Most incidents were classified as minor (23), alongside 6 moderate and 5 severe incidents.
+
+### Outside Force Damage
+Vehicle collisions and external fires triggered several significant incidents:
+* **Vehicle Impacts:** In Melvindale, a vehicle struck above-ground piping on a blow-off at a DTE Gas facility, rupturing a 30-inch pipeline operating at 540 psig, causing an ignition, injuring the driver, and interrupting high-pressure gas service to local industrial customers and a hospital [GD-20160064]. In Hartland Township, a car left the road and struck an electric and gas meter pedestal, igniting gas, damaging a home, and injuring the driver [GD-20160061].
+* **External Ground and Fire Events:** In Lansing, a house fire caused by discarded cigarette ashes in mulch spread to a residential gas meter, igniting natural gas and resulting in hospitalizations for two residents [GD-20170073]. In Davison, a nearby water main installation project and soil settling contributed to a flange separation on a gas distribution main [GD-20170077]. On a hazardous liquid system, an equipment operator clearing trees got stuck over a Wolverine Pipe Line right-of-way, resulting in a diesel fuel release [HL-20160202].
+
+### Excavation Damage
+Excavation activities led to pipeline strikes on transmission and distribution networks:
+* In Livonia, a contractor conducting pipeline integrity work hit a 4-inch bypass welded to a 10-inch high-pressure pipeline with an excavator, causing the weld to crack and release gas [GTG-20160087].
+* In Imlay City, an excavator struck a 4-inch plastic gas pipeline before restaking was completed, causing blowing gas and prompting the evacuation of 10 residences and 7 businesses [GD-20160062].
+
+### Incorrect Operation
+Operational and procedural errors led to releases and ignitions:
+* At the Detroit Metro Terminal, an operator failed to verify valve alignment after water checks, exposing check valves to tank head pressure and causing jet fuel to overflow into containment [HL-20170037].
+* At the St. Clair Compressor Station in Ira Township, a blow-down silencer ignited during start-up testing due to electrostatic discharge from entrained water droplets in the gas stream [GTG-20170081].
+
+### Equipment Failure
+* At the Lansing City Gate, regulator station failure caused by an influx of mid-range and heavy hydrocarbons led to overpressurization and the discharge of natural gas and an oily substance through a relief valve, affecting neighboring fields and homes [GD-20170096].
+
+### Other Incident Causes
+* In Detroit, investigations into two residential explosions and fires—one in July 2016 resulting in an injured occupant [GD-20160068], and another in 2017 [GD-20170095]—concluded with the initial causes remaining unknown."
+q18,How many incidents in Alaska were caused by natural forces such as earthquakes or ice?,examples of a category in the question,state in ['AK']; cause in ['NATURAL FORCE DAMAGE'],6,state in ['AK']; cause in ['NATURAL FORCE DAMAGE'],True,True,True,True,True,True,6,True,6,1.0,True,True,,True,,True,"According to the statistics, there were 6 pipeline incidents in Alaska caused by natural force damage. These occurred across multiple years (one each in 2012, 2013, 2015, 2016, 2017, and 2026), with five categorized as minor and one as moderate in severity. Specific environmental causes documented in incident reports include earthquakes, severe freezing conditions, and extreme winds.
+
+### Earthquakes
+* **Cook Inlet Earthquake:** In 2016, a magnitude 7.1 earthquake in Southcentral Alaska caused a 1¼-inch steel gas main to separate at a weld joint in Kenai [GD-20160018]. The resulting underground leak led to fires that damaged four homes [GD-20160018].
+
+### Freezing Temperatures and Ice
+* **Freezing Water in Equipment:** In 2026, extreme cold temperatures (-35°F) caused trapped water inside a closed 2-inch valve on a pig receiver to freeze, resulting in valve body expansion, failure, and a crude oil release [HL-20260023].
+* **Frozen Pipe Components:** In 2013, a ½-inch stem seal injection pipe failed due to external frozen components, releasing approximately 0.5 barrels of oil [HL-20130253].
+* **Sea Ice Complications:** In 2017, a gas leak occurred in Cook Inlet from mechanical abrasion between a pipeline and a submerged seafloor rock; response and repair efforts were hindered by large floating ice pans and broken sea ice [GTG-20170021].
+
+### Other Severe Weather Forces
+* **High Winds:** In 2012, wind conditions exceeding 120 mph caused widespread power outages and power system trips in Anchorage, resulting in a gate station regulator malfunction, overpressurization, and the release of nearly 8 million cubic feet of natural gas [GTG-20120104]. 
+* **Other Subsurface Releases:** An incident in 2015 involved a crude oil weep detected at a below-ground isolation fitting on the Trans-Alaska Pipeline System [HL-20150214].","According to the statistics, there were 6 pipeline incidents in Alaska caused by natural force damage. These occurred across multiple years (one each in 2012, 2013, 2015, 2016, 2017, and 2026), with five categorized as minor and one as moderate in severity. Specific environmental causes documented in incident reports include earthquakes, severe freezing conditions, and extreme winds.
+
+### Earthquakes
+* **Cook Inlet Earthquake:** In 2016, a magnitude 7.1 earthquake in Southcentral Alaska caused a 1¼-inch steel gas main to separate at a weld joint in Kenai [GD-20160018]. The resulting underground leak led to fires that damaged four homes [GD-20160018].
+
+### Freezing Temperatures and Ice
+* **Freezing Water in Equipment:** In 2026, extreme cold temperatures (-35°F) caused trapped water inside a closed 2-inch valve on a pig receiver to freeze, resulting in valve body expansion, failure, and a crude oil release [HL-20260023].
+* **Frozen Pipe Components:** In 2013, a ½-inch stem seal injection pipe failed due to external frozen components, releasing approximately 0.5 barrels of oil [HL-20130253].
+* **Sea Ice Complications:** In 2017, a gas leak occurred in Cook Inlet from mechanical abrasion between a pipeline and a submerged seafloor rock; response and repair efforts were hindered by large floating ice pans and broken sea ice [GTG-20170021].
+
+### Other Severe Weather Forces
+* **High Winds:** In 2012, wind conditions exceeding 120 mph caused widespread power outages and power system trips in Anchorage, resulting in a gate station regulator malfunction, overpressurization, and the release of nearly 8 million cubic feet of natural gas [GTG-20120104]. 
+* **Other Subsurface Releases:** An incident in 2015 involved a crude oil weep detected at a below-ground isolation fitting on the Trans-Alaska Pipeline System [HL-20150214]."
