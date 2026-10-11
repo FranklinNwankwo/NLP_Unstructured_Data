@@ -32,7 +32,8 @@ Built on public incident reports from the U.S. Pipeline and Hazardous Materials 
 16. [Mistakes, corrections and dead ends](#16-mistakes-corrections-and-dead-ends)
 17. [Known gaps and future work](#17-known-gaps-and-future-work)
 18. [Testing and reproduction](#18-testing-and-reproduction)
-19. [Data source and notes](#20-data-source-and-notes)
+19. [Data source and notes](#19-data-source-and-notes)
+20. [RAG evaluation](#20-rag-evaluation)
 
 ---
 
@@ -1002,7 +1003,7 @@ There is no continuous integration yet.
 - **Models:** `Chinonso11/phmsa-incident-models` on the Hugging Face Hub (fine-tuned from `distilbert-base-uncased`).
 - **Status:** a portfolio project. Not validated for operational, safety or regulatory use.
 
-### RAG evaluation
+## 20. RAG evaluation
 
 Hand-written questions covering year phrasing ("since", "before", "between"), multiple
 states/causes, paraphrased causes and a no-filter question. Full pipeline, Gemini 3.1 Flash-Lite
