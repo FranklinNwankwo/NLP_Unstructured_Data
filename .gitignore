@@ -11,4 +11,6 @@ ner_model/phmsa_ner_model/
 ner_model/*.zip
 severity_model/phmsa_severity_model/
 severity_model/*.zip
-baselines/spacy_model/
+baselines/spacy_mode
+rag_index/
+.streamlit/secrets.toml
