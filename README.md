@@ -46,6 +46,7 @@ All numbers are on held-out data that no model or rule was tuned on, unless stat
 | **Entity extraction** (12 types, per sentence) | DistilBERT token classification | **micro-F1 0.608** (precision 0.575, recall 0.645) on 840 gold spans in 156 sentences | rule-based gazetteers 0.371; spaCy statistical NER 0.553 |
 | **Relations** (6 active types, per sentence) | Rules over the predicted entities | **68% precision** (61 of 90 sampled relations correct, 95% interval 58 to 77%) | none (no gold relations, so recall is not measured) |
 | **Severity** (minor / moderate / severe / critical) | DistilBERT over the whole narrative | **macro-F1 0.777**, accuracy 0.956 on 1,921 narratives | TF-IDF + logistic regression 0.646; always-"minor" 0.230 |
+| **Question answering (RAG)** over all 9,610 narrated incidents | LLM-parsed filters, exact pandas statistics, semantic search inside the filtered set, cited answers | **18/18** filters and counts correct; citations valid **17/18** from the model, **18/18** after the citation check | none (see [section 20](#20-rag-evaluation)) |
 
 What works well, what does not:
 
@@ -145,6 +146,20 @@ flowchart TD
   V --> J
 ```
 
+### 3.3 What runs when you ask the RAG page a question
+
+```mermaid
+flowchart TD
+  Q["Question"] --> P["Gemini Flash-Lite: question to filters<br/>JSON, only values that exist in the data"]
+  P --> X["Validate filters against the data"]
+  X --> D["pandas: filter all 9,610 incidents"]
+  D --> ST["Exact statistics<br/>count, by year, cause, state, severity"]
+  D --> SR["Semantic search inside the filtered set<br/>bge-small-en-v1.5, cosine, top 12 reports"]
+  ST --> A["Gemini Flash: answer from statistics + 12 narratives,<br/>citing report ids"]
+  SR --> A
+  A --> G["Citation check<br/>repair one-character typos, remove the rest"]
+```
+
 Three deliberate design choices shape everything downstream:
 
 1. **Two models, not one.** Entity tagging is a per-token problem on single sentences; severity is a per-document problem. They have different inputs, labels, class balance and metrics, so they are trained and evaluated separately.
@@ -170,6 +185,10 @@ relation_extraction/           Phase 5: rule-based relation extractor, precision
 severity_model/                Phase 6: dataset export, TF-IDF baseline, keyword diagnostic, local inference
 pipeline/                      Phase 7: IncidentExtractor (end-to-end), CLI runner, offline tests
 demo/                          Phase 8: Streamlit app (demo/space), model upload, S3 archive, offline tests
+rag/                           RAG layer: index builder, query engine, config, cached example answers
+eval/                          RAG evaluation: 18 questions, scorer, saved results
+notebooks/                     Colab training: Training Runs 2.ipynb (NER, Phase 4), Training Runs.ipynb    
+                               (severity, Phase 6)
 ```
 
 ---
@@ -518,7 +537,7 @@ The cleanup changed about 1.4% of spans, and every model moved by about one poin
 
 **Four hypotheses, tested in order.**
 
-1. **Too few examples.** Rejected. I first concluded that were about 15 to 20 training examples; that was wrong. There were 165 `CAUSE_FACTOR` spans in total (21 of them in the original test set, the rest in train and dev).
+1. **Too few examples.** Rejected. I first concluded there were about 15 to 20 training examples; that was wrong. There were 165 `CAUSE_FACTOR` spans in total (21 of them in the original test set, the rest in train and dev).
 2. **The flat-span overlap rule deletes the broad cause spans.** Rejected: only 13 of 165 (8%) were dropped (table in section 10.5).
 3. **Boundary strictness on long vague spans.** Rejected: the spans are short (median 2 words, maximum 9, measured with `annotation/cause_factor_audit.py`).
 4. **Label inconsistency.** **Supported.** I read 40 random `CAUSE_FACTOR` spans. About a third were clear causes ("DIFFERENTIAL SOIL SETTLEMENT", "DREDGING OPERATION", "IMPROPER INSTALLATION", "COATING DETERIORATION"). The rest were generic words ("ROOT CAUSE", "CAUSE", "SOURCE", "GAS", "FORCE"), consequences ("FIRE" several times, "RELEASE", "LOSS") or the thing that broke ("RUPTURED", "DISENGAGED", "SEAL FAILURE", "MECHANICAL FAILURE"). No model can learn a stable pattern from a mixed concept.
@@ -808,16 +827,17 @@ Dropped spans are returned in `dropped_negated`, so nothing disappears silently.
 
 1. **One annotator, no agreement measure.** All 1,050 sentences were labeled by one person. Label quality is unmeasured, and `CAUSE_FACTOR` in particular was inconsistent.
 2. **Pre-annotation anchoring.** Sentences were pre-filled by the gazetteer pipeline. Correcting a pre-filled label is not the same as labeling from scratch; the scores of the rule-based baseline may be flattered on the five types it covers.
-4. **Conventions in the gold labels** (substances as `MATERIAL_SPEC`, generic place words as `LOCATION`, "incident" as a consequence) are visible in downstream output and were not corrected.
+3. **Conventions in the gold labels** (substances as `MATERIAL_SPEC`, generic place words as `LOCATION`, "incident" as a consequence) are visible in downstream output and were not corrected.
 
 **Evaluation**
 
-5. **Small test sets.** 156 sentences and 840 spans for NER. Types with fewer than about 60 spans are noisy; `INSPECTION_FINDING` has a single test span and is not evaluable.
-6. **The NER test set is enriched** for serious incidents by design (section 8.2); its scores are not estimates for the natural distribution of PHMSA sentences.
-7. **The NER split is sentence-level, not grouped by narrative**, and I did not verify that no narrative has sentences on both sides.
-8. **Test peeking, mildly.** I looked at test scores for several runs. Selection used dev, and I report the final protocol's run, but the test set is not strictly untouched.
-9. **Relation precision** rests on 15 sampled relations per type, judged by an AI assistant against a rubric. **Relation recall is not measured** at all.
-10. **Per-commodity results for rare severity classes** (2 to 7 test narratives) are not interpretable; only gas distribution has enough.
+4. **Small test sets.** 156 sentences and 840 spans for NER. Types with fewer than about 60 spans are noisy; `INSPECTION_FINDING` has a single test span and is not evaluable.
+5. **The NER test set is enriched** for serious incidents by design (section 8.2); its scores are not estimates for the natural distribution of PHMSA sentences.
+6. **The NER split is sentence-level, not grouped by narrative**, and I did not verify that no narrative has sentences on both sides.
+7. **Test peeking, mildly.** I looked at test scores for several runs. Selection used dev, and I report the final protocol's run, but the test set is not strictly untouched.
+8. **Relation precision** rests on 15 sampled relations per type, judged by an AI assistant against a rubric. **Relation recall is not measured** at all.
+9. **Per-commodity results for rare severity classes** (2 to 7 test narratives) are not interpretable; only gas distribution has enough.
+10. **RAG evaluation is small and builder-written.** 18 questions, one run. It checks filters, counts and that citations point to retrieved reports, not whether each cited narrative supports the sentence (faithfulness) or whether the most relevant reports were retrieved.
 
 **Model behavior**
 
@@ -830,7 +850,7 @@ Dropped spans are returned in `dropped_negated`, so nothing disappears silently.
 **Deployment**
 
 16. Free hosting: the app hibernates when idle and memory is limited; the first request after a quiet spell is slow while the models reload.
-17. **Do not paste confidential text.** The app runs on a third-party host, and PHMSA narratives are public records that can include street addresses and individuals' names.
+16. **Do not paste confidential text.** The app runs on a third-party host, and PHMSA narratives are public records that can include street addresses and individuals' names.
 
 **This is a portfolio project, not a tool for operational, safety or regulatory decisions.**
 
@@ -922,6 +942,17 @@ Every non-trivial decision, the alternatives I considered, and the reason or evi
 | 46 | Show measured accuracy and limits inside the app | omit | The app should never look more reliable than it is (13.3) |
 | 47 | Reproduce both models locally against Colab's numbers | trust the download | NER 0.608 and severity 0.777 matched exactly (10.6, 12.7) |
 
+### RAG layer
+
+| # | Decision | Alternatives | Reason and evidence |
+|---|---|---|---|
+| 48 | Hybrid retrieval: LLM-parsed filters, exact pandas statistics, semantic search only inside the filtered set | plain vector search over all chunks | Vector similarity cannot enforce state, system type or years, and cannot count; filters make both exact (20) |
+| 49 | Counts come from code, never from the LLM | let the model count the retrieved reports | It sees 12 reports out of possibly hundreds; "how many" answers stated the correct count 6/6 (20) |
+| 50 | Brute-force NumPy cosine over 10,938 × 384 float16 embeddings | FAISS, Chroma, a hosted vector database | Exact and takes milliseconds at this size; pre-filtering is a boolean mask; one less dependency on the free host |
+| 51 | Report ids prefixed per commodity (`GD-`, `GTG-`, `HL-`) | raw `REPORT_NUMBER` | Report numbers repeat across the three forms; deduplicating on them silently dropped 3,481 incidents |
+| 52 | Filter calls on Gemini Flash-Lite, answers on Gemini Flash; cached answers for the example questions | one model | Each model has its own free daily quota (20 requests), so splitting doubles capacity; examples cost no quota |
+| 53 | Citation check: repair a citation one character from exactly one retrieved id, remove any other | trust the model's citations | The model invented an id in an earlier run; after a stricter prompt, 17/18 answers were fully valid and the check repaired the 18th (20) |
+
 ---
 
 ## 16. Mistakes, corrections and dead ends
@@ -934,10 +965,12 @@ Listed because they show how problems were caught, and because several change ho
 4. **Three wrong hypotheses about `CAUSE_FACTOR`** before the right one: too few examples (I had miscounted), the overlap rule (8% loss), long vague spans (median 2 words). The fourth, inconsistent labels, held up.
 5. **Training ran on a CPU runtime without my noticing.** The first NER run took 1 h 07 min for 720 steps; the severity run projected 50 hours. Fixed by switching to a T4. Results unaffected.
 6. **The first relation extractor looked healthy by counts (1,697 relations, 93% coverage) and was full of junk** ("piping made of GAS"). Only reading worked examples revealed it; version 2 cut it to 868.
-9. **Mild test peeking** on NER runs 1 and 3 (section 10.2).
-10. **The first `CAUSE_FACTOR` relabel pass judged span text without the sentence**; a second pass with full sentences replaced it (78 → 80 decisions).
-11. **Two proposed checks were not run:** a token-level `CAUSE_FACTOR` score, and a post-fix relation precision. Both are listed as gaps, not claimed.
-12. **Wording of the app's relation counts.** They were first labeled "Hand-checked"; because the judgments were AI-drafted, the column is now "Sample review" and the About panel says so.
+7. **Mild test peeking** on NER runs 1 and 3 (section 10.2).
+8. **The first `CAUSE_FACTOR` relabel pass judged span text without the sentence**; a second pass with full sentences replaced it (78 → 80 decisions).
+9. **Two proposed checks were not run:** a token-level `CAUSE_FACTOR` score, and a post-fix relation precision. Both are listed as gaps, not claimed.
+10. **Wording of the app's relation counts.** They were first labeled "Hand-checked"; because the judgments were AI-drafted, the column is now "Sample review" and the About panel says so.
+11. **The first RAG index silently dropped 3,481 incidents.** `REPORT_NUMBER` repeats across the three commodity forms, and deduplicating on it removed real incidents (gas transmission showed 646 instead of 2,053). Caught by comparing the build's printed counts with section 6.1; fixed with per-commodity id prefixes.
+12. **The RAG answer model invented a citation** (`GD-2020053`, an id that does not exist) in 1 of 6 answers in an early evaluation run. Fixed with a stricter prompt and a code check on every citation (section 20).
 
 ---
 
