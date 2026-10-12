@@ -14,7 +14,7 @@ from pathlib import Path
 COLS = {
     "report_id": "REPORT_NUMBER",
     "year": "IYEAR",
-    "state": ["ONSHORE_STATE_ABBREVIATION", "LOCATION_STATE_ABBREVIATION"],
+    "state": ["ONSHORE_STATE_ABBREVIATION", "LOCATION_STATE_ABBREVIATION", "OFFSHORE_STATE_ABBREVIATION"],
     "system_type": "commodity_type",
     "cause": "CAUSE",
     "narrative": "NARRATIVE",
