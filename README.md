@@ -12,8 +12,8 @@ Built on public incident reports from the U.S. Pipeline and Hazardous Materials 
 
 ---
 
-![Dashboard](docs/Demo 1.png)
-![Dashboard](docs/Demo 2.png)
+![Dashboard](docs/Demo1.png)
+![Dashboard](docs/Demo2.png)
 
 ## Table of contents
 
