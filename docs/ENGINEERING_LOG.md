@@ -191,7 +191,7 @@ rag/                           RAG layer: index builder, query engine, config, c
 docs/                          this engineering log and the demo screenshots
 eval/                          RAG evaluation: 18 questions, scorer, saved results
 notebooks/                     Colab training: Training Runs 2.ipynb (NER, Phase 4), Training Runs.ipynb    
-                               (severity, Phase 6), ner_model_comparison.py (DistilBERT vs BERT-base, section 10.8)
+                               (severity, Phase 6), ner_model_comparison.ipynb (DistilBERT vs BERT-base, section 10.8)
 ```
 
 ---
@@ -624,7 +624,7 @@ Per type (8-shot F1 vs DistilBERT F1):
 
 **Conclusion.** With 760 labeled sentences, fine-tuning a small model beats prompting a hosted LLM on this schema, mostly because labeling conventions are easier to learn from labels than from a prompt.
 
-### 10.8 Does a bigger model help? DistilBERT vs BERT-base (`notebooks/ner_model_comparison.py`)
+### 10.8 Does a bigger model help? DistilBERT vs BERT-base (`notebooks/ner_model_comparison.ipynb`)
 
 To answer "did you try a bigger model?", I trained `bert-base-uncased` (110M parameters, about 1.7 times DistilBERT's 66M) with exactly the run-4 settings (section 10.2), on the same export, and retrained DistilBERT alongside it. Each model was trained with 3 seeds (42, 43, 44) on a Colab T4, so the gap can be compared with seed-to-seed noise. Each run chose its best epoch on dev, and all 6 runs are reported, so nothing was selected on test. The raw results are in `ner_model/results/`. They also contain three `microsoft/deberta-v3-base` runs at the same settings, which never learned (dev F1 0.000 at every epoch) and are not compared here.
 
@@ -1105,7 +1105,7 @@ Listed because they show how problems were caught, and because several change ho
 4. `python annotation/parse_export.py`, then `python annotation/train_test_split.py`.
 5. Optional `CAUSE_FACTOR` cleanup: `python annotation/export_cause_factor_review.py`, fill the CSV, `python annotation/apply_cause_factor_review.py` (rebuilds from the `*_v1` backups).
 6. Baselines: `python baselines/baseline_rule_based.py`; `python baselines/convert_to_spacy.py`; `python -m spacy init config baselines/config.cfg --lang en --pipeline ner --optimize efficiency --force`; `python -m spacy train baselines/config.cfg --output baselines/spacy_model --paths.train data/processed/spacy_train.spacy --paths.dev data/processed/spacy_dev.spacy`; `python baselines/baseline_spacy_statistical.py`; optional LLM baseline (needs `LLM_API_KEY` and `LLM_MODEL`): `python baselines/baseline_llm.py --mode few --split dev`, then `--mode few --split test` and `--mode zero --split test`.
-7. NER: `python ner_model/export_for_colab.py`; fine-tune in Colab with the settings in section 10.2; place the model in `ner_model/phmsa_ner_model`; `python ner_model/check_local_model.py`; optional model-size comparison: run `notebooks/ner_model_comparison.py` in Colab; optional `python ner_model/cause_factor_diagnosis.py` (add `--split train` for the training sentences).
+7. NER: `python ner_model/export_for_colab.py`; fine-tune in Colab with the settings in section 10.2; place the model in `ner_model/phmsa_ner_model`; `python ner_model/check_local_model.py`; optional model-size comparison: run `notebooks/ner_model_comparison.ipynb` in Colab; optional `python ner_model/cause_factor_diagnosis.py` (add `--split train` for the training sentences).
 8. Relations: `python relation_extraction/run_relations.py`; precision sampling with `python relation_extraction/precision_sheet.py`, judgments, then `python relation_extraction/precision_report.py`.
 9. Severity: `python severity_model/export_for_colab.py`; `python severity_model/baseline_tfidf.py`; `python severity_model/keyword_ceiling.py`; fine-tune in Colab with the settings in section 12.4; place the model in `severity_model/phmsa_severity_model`; `python severity_model/check_severity_local.py`.
 10. `python pipeline/run_pipeline.py`.
