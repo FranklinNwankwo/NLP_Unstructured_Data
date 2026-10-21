@@ -1095,7 +1095,7 @@ Listed because they show how problems were caught, and because several change ho
 | Reproduction checks | `ner_model/check_local_model.py`, `severity_model/check_severity_local.py` | re-score the downloaded models and compare with Colab (NER micro-F1 0.608; severity macro-F1 0.777, confusion matrix identical) |
 | Alignment and QA | `baselines/check_bio_alignment.py`, `weak_supervision/verify_*.py`, `measure_negation*.py` | alignment (0 of 156 flagged), bug fixes, negation rates |
 
-There is no continuous integration yet.
+**Continuous integration.** `.github/workflows/tests.yml` runs the three offline suites (relation rules, pipeline, demo) on every push and pull request with GitHub Actions. They use fake models, so CI needs no model downloads or GPU. Each suite exits with an error code when any check fails, so a failure turns the run red.
 
 ### Reproduction order
 

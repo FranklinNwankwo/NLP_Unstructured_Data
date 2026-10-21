@@ -1,0 +1,23 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies (no models or GPU needed)
+        run: pip install spacy pandas streamlit
+      - name: Relation rules
+        run: python relation_extraction/extract_relations.py
+      - name: Pipeline (fake models)
+        run: python pipeline/test_incident_extractor.py
+      - name: Demo app (fake models, headless Streamlit)
+        run: python demo/test_demo.py

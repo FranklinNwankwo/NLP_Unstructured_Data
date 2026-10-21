@@ -159,3 +159,4 @@ check("pasting your own text works", not at.exception and "<mark" in " ".join(m.
       str([e.value for e in at.exception]))
 
 print(f"\n{'ALL PASSED' if not failures else str(failures) + ' FAILED'}")
+sys.exit(1 if failures else 0)

@@ -1,5 +1,7 @@
 # PHMSA Incident Extraction
 
+[![tests](https://github.com/FranklinNwankwo/NLP_Unstructured_Data/actions/workflows/tests.yml/badge.svg)](https://github.com/FranklinNwankwo/NLP_Unstructured_Data/actions/workflows/tests.yml)
+
 **Turning free-text pipeline incident narratives into structured records: entities, relations between them, and a severity prediction, plus cited question answering over all incidents.**
 
 ## TL;DR
@@ -29,8 +31,8 @@ Everything else (data audit, weak supervision, annotation, every training run, b
 - [Architecture](docs/ENGINEERING_LOG.md#3-architecture)
 - [The CAUSE_FACTOR investigation](docs/ENGINEERING_LOG.md#104-the-cause_factor-investigation)
 - [Prompted-LLM baseline](docs/ENGINEERING_LOG.md#107-baseline-c-a-prompted-llm-baselinesbaseline_llmpy) and [bigger model](docs/ENGINEERING_LOG.md#108-does-a-bigger-model-help-distilbert-vs-bert-base-notebooksner_model_comparisonpy)
-- [Limitations and threats to validity](docs/ENGINEERING_LOG.md#14-limitations-and-threats-to-validity)
-- [Decision register](docs/ENGINEERING_LOG.md#15-decision-register) and [mistakes, corrections and dead ends](docs/ENGINEERING_LOG.md#16-mistakes-corrections-and-dead-ends)
+- [Limitations and threats to validity](docs/ENGINEERING_LOG.md#15-limitations-and-threats-to-validity)
+- [Decision register](docs/ENGINEERING_LOG.md#16-decision-register) and [mistakes, corrections and dead ends](docs/ENGINEERING_LOG.md#17-mistakes-corrections-and-dead-ends)
 
 ## Quickstart
 

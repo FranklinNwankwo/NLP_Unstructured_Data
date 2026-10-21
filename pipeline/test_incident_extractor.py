@@ -125,3 +125,4 @@ ids, mask = ns["pad_batch"]([[1, 2, 3], [4]], 0)
 check("pad_batch: padded to the longest, mask matches", ids == [[1, 2, 3], [4, 0, 0]] and mask == [[1, 1, 1], [1, 0, 0]])
 
 print(f"\n{'ALL PASSED' if not failures else str(failures) + ' FAILED'}")
+sys.exit(1 if failures else 0)
