@@ -20,8 +20,8 @@
   - Add a second annotator to measure label agreement, and gold relations to measure relation recall
   - Link cause and effect expressed by verbs and across sentences, where most of it lives
 
-![Dashboard](docs/Demo1.png)
-![Dashboard](docs/Demo2.png)
+![Dashboard](docs/Demo.webp)
+
 
 ## Where to read more
 

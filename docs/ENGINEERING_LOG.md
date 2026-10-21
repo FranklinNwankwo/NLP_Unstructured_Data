@@ -9,8 +9,8 @@ This is the full engineering record: every design decision, every iteration, wha
 
 ---
 
-![Dashboard](Demo1.png)
-![Dashboard](Demo2.png)
+![Dashboard](docs/Demo.webp)
+
 
 ## Table of contents
 
