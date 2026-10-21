@@ -32,7 +32,7 @@ ENTITY_HELP = {
 
 # hand-reviewed relations per type: (correct, sampled). Small samples; see ABOUT_MD.
 RELATION_PRECISION = {
-    "CAUSED_BY": (10, 15), "HAS_QUANTITY": (11, 15), "LOCATED_AT": (13, 15),
+    "CAUSED_BY": (10, 15), "HAS_QUANTITY": (12, 15), "LOCATED_AT": (13, 15),
     "MADE_OF": (12, 15), "REMEDIATED_BY": (6, 15), "RESULTED_IN": (9, 15),
 }
 
@@ -58,8 +58,8 @@ Weak: failure modes (0.45), locations (0.39), regulatory references (0.08).
 Root causes (`CAUSE_FACTOR`) are **not** extracted: the model scores 0 on them.
 
 **Relations** are rules applied to the entities within one sentence. 15 sampled relations per type (90 in
-total) were reviewed against a written rubric, with the judgments drafted by an AI assistant and not
-independently re-checked: 61 were correct (68%, 95% interval 58 to 77%). The per-type counts in the table
+total) were reviewed by hand against a written rubric, starting from AI-drafted judgments:
+62 were correct (69%, 95% interval 59 to 78%). The per-type counts in the table
 are small samples, so treat them as rough. `REMEDIATED_BY` is the least reliable type.
 
 **Severity** (minor, moderate, severe, critical) is predicted from the whole narrative: macro-F1 0.777 on

@@ -1,0 +1,10 @@
+model,seed,best_epoch,epochs_run,dev_f1,test_f1,test_precision,test_recall,cause_factor_f1,minutes,test_f1_gas_distribution,test_f1_gas_transmission_gathering,test_f1_hazardous_liquid
+distilbert-base-uncased,42,7,10,0.605,0.616,0.5923,0.6417,0.0,1.9,0.5919,0.6217,0.6385
+distilbert-base-uncased,43,6,9,0.5872,0.5965,0.5685,0.6274,0.0,2.0,0.5935,0.583,0.6137
+distilbert-base-uncased,44,9,12,0.5996,0.615,0.5744,0.6619,0.0,3.0,0.6088,0.601,0.637
+bert-base-uncased,42,6,9,0.6128,0.6211,0.5701,0.6821,0.0,2.8,0.5968,0.6136,0.6574
+bert-base-uncased,43,10,13,0.6052,0.627,0.5785,0.6845,0.0,4.6,0.6211,0.6278,0.6332
+bert-base-uncased,44,6,9,0.6044,0.6122,0.5552,0.6821,0.0,3.4,0.6065,0.596,0.6351
+microsoft/deberta-v3-base,42,1,4,0.0,0.0,0.0,0.0,0.0,1.4,0.0,0.0,0.0
+microsoft/deberta-v3-base,43,1,4,0.0,0.0,0.0,0.0,0.0,1.3,0.0,0.0,0.0
+microsoft/deberta-v3-base,44,1,4,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0

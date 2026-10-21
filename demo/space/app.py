@@ -106,7 +106,7 @@ else:
     if cards:
         st.markdown(cards, unsafe_allow_html=True)
         st.caption("'Sample review' counts come from reviewing 15 sampled relations of each type against a "
-                   "written rubric (judgments drafted by an AI assistant, not independently re-checked). "
+                   "written rubric (reviewed by hand, starting from AI-drafted judgments). "
                    "They are small samples, so treat them as rough.")
     else:
         st.info("No relations found. The relation layer is rule-based and conservative: it only links "

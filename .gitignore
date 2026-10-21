@@ -14,3 +14,4 @@ severity_model/*.zip
 baselines/spacy_model/
 rag_index/
 .streamlit/secrets.toml
+data/processed/llm_cache/

@@ -55,12 +55,12 @@ rec = {"entities": ents + [{"text": "SPILL", "label": "CONSEQUENCE", "start": 30
 rdf = relations_dataframe(rec)
 check("relations table: columns and measured counts",
       list(rdf.columns) == ["Relation", "From", "To", "Sentence", "Sample review"]
-      and rdf.loc[0, "Sample review"] == "11 of 15 correct" and rdf.loc[0, "To"] == "2 BARRELS (volume_liquid)"
+      and rdf.loc[0, "Sample review"] == "12 of 15 correct" and rdf.loc[0, "To"] == "2 BARRELS (volume_liquid)"
       and rdf.loc[1, "Sample review"] == "not measured" and rdf.loc[0, "Sentence"] == 1)
 edf = entities_dataframe(rec)
 check("entities table: duplicates are counted", int(edf.loc[edf["Text"] == "SPILL", "Count"].iloc[0]) == 2)
 check("entities table: empty record gives an empty table", entities_dataframe({"entities": []}).empty)
-check("measured counts match the precision check (61 of 90)", sum(c for c, _ in RELATION_PRECISION.values()) == 61
+check("measured counts match the precision check (62 of 90)", sum(c for c, _ in RELATION_PRECISION.values()) == 62
       and sum(n for _, n in RELATION_PRECISION.values()) == 90)
 
 # ---- 1b. visual helpers -----------------------------------------------------
