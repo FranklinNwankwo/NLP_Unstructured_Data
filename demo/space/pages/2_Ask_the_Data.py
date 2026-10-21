@@ -14,12 +14,17 @@ if str(REPO_ROOT) not in sys.path:
 from rag.config import EXAMPLES, EXAMPLES_CACHE  # noqa: E402
 from rag.engine import Result  # noqa: E402
 
+APP_DIR = Path(__file__).resolve().parents[1]          # demo/space, where ui_helpers.py lives
+if str(APP_DIR) not in sys.path:
+    sys.path.insert(0, str(APP_DIR))
+from ui_helpers import CSS, page_header_html  # noqa: E402
+
 st.set_page_config(page_title="Ask the incident data", layout="wide")
-st.title("Ask the incident data")
-st.caption(
+st.markdown("<style>" + CSS + "</style>", unsafe_allow_html=True)
+st.markdown(page_header_html(
+    "9,610 incidents · exact counts · cited reports", "Ask the incident data",
     "Questions are turned into filters over every extracted incident (exact counts), "
-    "then the most relevant narratives are retrieved and summarised with citations."
-)
+    "then the most relevant narratives are retrieved and summarised with citations."), unsafe_allow_html=True)
 
 
 @st.cache_data

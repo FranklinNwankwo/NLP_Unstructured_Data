@@ -1,18 +1,28 @@
 """Pure helpers for the Streamlit demo (no model or Streamlit imports, so they can be unit-tested)."""
 
 import html
+from urllib.parse import quote
 
 import pandas as pd
 
-NAVY = "#0b3a53"
-TEAL = "#0b6e99"
-BORDER = "#dfe7ee"
+# Control-room palette: crude-black steel, flare orange accent, gas-line blue, marker-post yellow.
+BG = "#0d1215"
+PANEL = "#141c21"
+PANEL_2 = "#1a242a"
+LINE = "#2a3740"
+INK = "#dbe2e6"
+MUTED = "#8c9ba4"
+FLARE = "#f28c28"
+GAS = "#5fb3d9"
+MARKER = "#f2c230"
+DISPLAY = "'Barlow Condensed','Arial Narrow',sans-serif"
+MONO = "'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace"
 
 LABEL_COLORS = {
-    "EQUIPMENT": "#9ecae9", "FAILURE_MODE": "#f4a6a0", "CAUSE_FACTOR": "#e08a85",
-    "ACTION_TAKEN": "#9be0b5", "CONSEQUENCE": "#f7c59a", "QUANTITY": "#cdb4e0",
-    "LOCATION": "#8fded0", "DATE_TIME": "#aeb9c6", "MATERIAL_SPEC": "#f4e08a",
-    "INSPECTION_FINDING": "#c4cbd0", "PARTY_ROLE": "#eba87a", "REGULATORY_REF": "#b5c0c4",
+    "EQUIPMENT": "#8cc4e6", "FAILURE_MODE": "#f09a92", "CAUSE_FACTOR": "#d9837d",
+    "ACTION_TAKEN": "#8fd6a8", "CONSEQUENCE": "#f5b77f", "QUANTITY": "#c3a9de",
+    "LOCATION": "#7fd3c4", "DATE_TIME": "#a9b6c3", "MATERIAL_SPEC": "#eed676",
+    "INSPECTION_FINDING": "#bcc5cb", "PARTY_ROLE": "#e49c6b", "REGULATORY_REF": "#aab7bd",
 }
 
 ENTITY_HELP = {
@@ -37,9 +47,9 @@ RELATION_PRECISION = {
 }
 
 SEVERITY_ORDER = ["minor", "moderate", "severe", "critical"]
-SEVERITY_STYLE = {                      # (background, text colour)
-    "minor": ("#2f855a", "#ffffff"), "moderate": ("#f6ad55", "#1f2937"),
-    "severe": ("#dd6b20", "#ffffff"), "critical": ("#c53030", "#ffffff"),
+SEVERITY_STYLE = {                      # (background, text colour): alarm-panel colours on a dark ground
+    "minor": ("#3fa66b", "#06140c"), "moderate": ("#f2c230", "#1a1404"),
+    "severe": ("#f28c28", "#1a0d02"), "critical": ("#e5484d", "#ffffff"),
 }
 
 CAUSE_NOTE = (
@@ -83,13 +93,20 @@ Not for operational, safety or regulatory decisions.
 
 # Injected once with <style>. Plain selectors only; if a selector stops matching, the page just looks plainer.
 CSS = """
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+.stApp{background-color:#0d1215;background-image:linear-gradient(rgba(95,179,217,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(95,179,217,.045) 1px,transparent 1px);background-size:28px 28px}
 .block-container{max-width:1180px;padding-top:1.4rem;padding-bottom:3rem}
 footer{visibility:hidden}
 header[data-testid="stHeader"]{background:transparent}
-section[data-testid="stSidebar"]{border-right:1px solid #dfe7ee}
-.stButton>button[kind="primary"]{border-radius:10px;font-weight:600;padding:.45rem 1.6rem}
-button[data-baseweb="tab"]{font-weight:600}
-h2,h3{color:#0b3a53}
+section[data-testid="stSidebar"]{background:#11181c;border-right:1px solid #2a3740}
+h1,h2,h3{font-family:'Barlow Condensed','Arial Narrow',sans-serif !important;letter-spacing:.02em}
+h2,h3{color:#dbe2e6;text-transform:uppercase;font-weight:600 !important}
+.stButton>button[kind="primary"]{border-radius:4px;font-weight:700;padding:.45rem 1.6rem;letter-spacing:.06em;text-transform:uppercase;color:#1a0d02}
+.stButton>button{border-radius:4px}
+button[data-baseweb="tab"]{font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:.85rem}
+div[data-testid="stTextArea"] textarea{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.86rem;background:#10171b;border-color:#2a3740}
+div[data-testid="stExpander"] details{border-color:#2a3740;background:#141c21}
+div[data-testid="stMetricValue"]{font-family:'IBM Plex Mono',ui-monospace,monospace}
 """
 
 
@@ -99,54 +116,84 @@ def _safe(text):
 
 
 def _chip(label, text=None):
-    color = LABEL_COLORS.get(label, "#ddd")
-    return (f'<span style="background:{color};color:#111;padding:2px 9px;border-radius:10px;'
-            f'font-size:0.8rem;margin-right:6px;white-space:nowrap">{html.escape(text or label)}</span>')
+    color = LABEL_COLORS.get(label, "#ccc")
+    return (f'<span style="background:{color};color:#0d1215;padding:2px 8px;border-radius:3px;'
+            f'font:600 .74rem/1.5 {MONO};letter-spacing:.02em;margin-right:6px;white-space:nowrap">'
+            f'{html.escape(text or label)}</span>')
+
+_SCHEMATIC_SVG = (
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 560 150' fill='none' font-family='monospace"
+    "'><g stroke='#5fb3d9' stroke-width='2' opacity='.55'><path d='M0 86H560'/><path d='M330 86V128H5"
+    "60'/><path d='M88 74V98M96 74V98M268 74V98M276 74V98M436 116V140M444 116V140'/><path d='M150 74L"
+    "174 98V74L150 98Z' fill='#0d1215'/><path d='M380 116L404 140V116L380 140Z' fill='#0d1215'/><path"
+    " d='M486 78L506 86L486 94Z' fill='#5fb3d9'/><path d='M500 120L520 128L500 136Z' fill='#5fb3d9'/>"
+    "</g><g stroke='#f28c28' stroke-width='1.6' opacity='.8'><path d='M218 86V54' stroke-dasharray='3"
+    " 3'/><circle cx='218' cy='36' r='18' fill='#0d1215'/><path d='M200 36H236'/><path d='M346 86V58'"
+    " stroke-dasharray='3 3'/><circle cx='346' cy='40' r='18' fill='#0d1215'/><path d='M328 40H364'/>"
+    "</g><g fill='#f28c28' font-size='10' text-anchor='middle' opacity='.9'><text x='218' y='32'>PI</"
+    "text><text x='218' y='49'>101</text><text x='346' y='36'>FT</text><text x='346' y='53'>102</text"
+    "></g><g fill='#5fb3d9' font-size='9' opacity='.6'><text x='14' y='78'>6IN-NG-101</text><text x='"
+    "420' y='78'>FLOW</text></g></svg>"
+)
+# A P&ID-style pipe run (valves, flanges, PI/FT instrument balloons) behind the hero text. Streamlit strips
+# image URLs from inline styles, so it is a stylesheet class, URL-encoded. Wide screens only, in its own column.
+CSS += ("@media (min-width:1000px){.phx-schem{"
+        'background-image:url("data:image/svg+xml,' + quote(_SCHEMATIC_SVG, safe="") + '");'
+        "background-repeat:no-repeat;background-position:right .4rem center;background-size:40% auto;"
+        "padding-right:44% !important}}")
 
 
 def hero_html():
-    pill = ('<span style="display:inline-block;background:rgba(255,255,255,.16);border:1px solid '
-            'rgba(255,255,255,.3);color:#fff;padding:.2rem .8rem;border-radius:999px;font-size:.8rem;'
-            'margin:0 .45rem .35rem 0">{}</span>')
-    pills = "".join(pill.format(t) for t in
-                    ["12 entity types", "6 relation types", "4 severity levels", "8 cause categories", "3 fine-tuned DistilBERT models"])
-    return (f'<div style="background:linear-gradient(135deg,{NAVY} 0%,{TEAL} 100%);border-radius:16px;'
-            'padding:1.5rem 1.8rem;color:#fff;margin-bottom:.6rem">'
-            '<div style="font-size:.76rem;letter-spacing:.16em;text-transform:uppercase;opacity:.78">'
-            'NLP on pipeline incident reports</div>'
-            '<div style="font-size:2.05rem;font-weight:800;line-height:1.15;margin:.25rem 0 .4rem 0">'
-            'PHMSA Incident Extractor</div>'
-            '<div style="font-size:1.02rem;opacity:.93;max-width:44rem;margin-bottom:.9rem">'
+    tag = (f'<span style="display:inline-block;border:1px solid {LINE};background:{PANEL_2};color:{INK};'
+           f'padding:.18rem .6rem;border-radius:3px;font:600 .72rem/1.4 {MONO};letter-spacing:.04em;'
+           'margin:0 .4rem .4rem 0">{}</span>')
+    tags = "".join(tag.format(t) for t in
+                   ["12 ENTITY TYPES", "6 RELATION TYPES", "4 SEVERITY LEVELS", "8 CAUSE CATEGORIES",
+                    "3 DISTILBERT MODELS"])
+    return (f'<div style="position:relative;background:{PANEL};border:1px solid {LINE};border-radius:6px;'
+            f'overflow:hidden;margin-bottom:.6rem">'
+            '<div class="phx-schem" style="padding:1.4rem 1.7rem 1.1rem 1.7rem">'
+            f'<div style="font:600 .72rem/1 {MONO};letter-spacing:.16em;text-transform:uppercase;color:{FLARE}">'
+            'PHMSA incident reports &middot; 49 CFR Parts 191 and 195</div>'
+            f'<div style="font:700 2.5rem/1.05 {DISPLAY};letter-spacing:.02em;text-transform:uppercase;color:{INK};'
+            'margin:.45rem 0 .5rem 0">PHMSA Incident Extractor</div>'
+            f'<div style="font-size:1rem;color:{MUTED};max-width:40rem;margin-bottom:.9rem">'
             'Paste a free-text pipeline incident narrative and get back a structured record: what failed, '
             'what was done about it, what resulted, why it happened, and how severe it was.</div>'
-            f'{pills}</div>')
-
+            f'{tags}</div>'
+            f'<div style="height:6px;background:repeating-linear-gradient(-45deg,{MARKER} 0 10px,{BG} 10px 20px)"></div>'
+            '</div>')
 
 def step_html(number, title):
-    return ('<div style="display:flex;align-items:center;gap:.6rem;margin:1.1rem 0 .5rem 0">'
-            f'<span style="display:inline-flex;align-items:center;justify-content:center;width:1.7rem;'
-            f'height:1.7rem;border-radius:50%;background:{TEAL};color:#fff;font-weight:700;font-size:.9rem">'
-            f'{int(number)}</span>'
-            f'<span style="font-size:1.2rem;font-weight:700;color:{NAVY}">{html.escape(title)}</span></div>')
-
+    """Step marker drawn as a P&ID instrument balloon: a circle split by a line, tag above, number below."""
+    balloon = (f'<span style="display:inline-flex;flex-direction:column;align-items:center;justify-content:center;'
+               f'width:2.5rem;height:2.5rem;border-radius:50%;border:1.6px solid {FLARE};background:{BG};'
+               f'font:600 .62rem/1 {MONO};color:{FLARE}">'
+               '<span style="padding-bottom:2px">STEP</span>'
+               f'<span style="border-top:1.4px solid {FLARE};width:100%;text-align:center;padding-top:3px;'
+               f'font-size:.74rem">{int(number):02d}</span></span>')
+    return ('<div style="display:flex;align-items:center;gap:.75rem;margin:1.2rem 0 .55rem 0">'
+            f'{balloon}<span style="font:600 1.45rem/1 {DISPLAY};letter-spacing:.04em;text-transform:uppercase;'
+            f'color:{INK}">{html.escape(title)}</span>'
+            f'<span style="flex:1;height:1px;background:{LINE};margin-left:.4rem"></span></div>')
 
 def stat_cards_html(items):
-    """items: list of (label, value) shown as a row of small cards."""
+    """items: list of (label, value) shown as a row of instrument readouts."""
     cards = "".join(
-        f'<div style="flex:1;min-width:7rem;background:#fff;border:1px solid {BORDER};border-radius:12px;'
-        f'padding:.7rem .95rem"><div style="font-size:1.5rem;font-weight:800;color:{NAVY};line-height:1.1">'
-        f'{html.escape(str(value))}</div><div style="font-size:.72rem;color:#5b6b78;text-transform:uppercase;'
-        f'letter-spacing:.07em;margin-top:.2rem">{html.escape(label)}</div></div>'
+        f'<div style="flex:1;min-width:7rem;background:{PANEL};border:1px solid {LINE};border-top:2px solid {GAS};'
+        f'border-radius:4px;padding:.65rem .9rem"><div style="font:600 1.45rem/1.1 {MONO};color:{INK};'
+        f'font-variant-numeric:tabular-nums">{html.escape(str(value))}</div>'
+        f'<div style="font:600 .66rem/1.3 {MONO};color:{MUTED};text-transform:uppercase;'
+        f'letter-spacing:.1em;margin-top:.3rem">{html.escape(label)}</div></div>'
         for label, value in items)
-    return f'<div style="display:flex;gap:.7rem;flex-wrap:wrap;margin:.2rem 0 .9rem 0">{cards}</div>'
-
+    return f'<div style="display:flex;gap:.6rem;flex-wrap:wrap;margin:.2rem 0 .9rem 0">{cards}</div>'
 
 def severity_badge_html(label):
     bg, fg = SEVERITY_STYLE.get(label, ("#4a5568", "#ffffff"))
-    return (f'<div style="display:inline-block;background:{bg};color:{fg};padding:.4rem 1.3rem;'
-            'border-radius:999px;font-weight:800;letter-spacing:.08em;font-size:1.05rem;margin:.2rem 0 .8rem 0">'
-            f'{html.escape(label.upper())}</div>')
-
+    return (f'<div style="display:inline-flex;align-items:center;gap:.55rem;background:{bg};color:{fg};'
+            f'padding:.38rem 1.1rem;border-radius:3px;font:700 1.15rem/1.2 {DISPLAY};letter-spacing:.12em;'
+            'margin:.2rem 0 .8rem 0"><span style="width:.55rem;height:.55rem;border-radius:50%;'
+            f'background:{fg};opacity:.8"></span>{html.escape(label.upper())}</div>')
 
 def probability_bars_html(probs):
     top = max(SEVERITY_ORDER, key=lambda k: probs.get(k, 0.0))
@@ -156,13 +203,12 @@ def probability_bars_html(probs):
         bg = SEVERITY_STYLE[k][0]
         weight = "700" if k == top else "400"
         rows.append(
-            f'<div style="display:flex;align-items:center;gap:.6rem;margin:.3rem 0;font-weight:{weight}">'
-            f'<span style="width:5.2rem;font-size:.85rem">{k}</span>'
-            f'<span style="flex:1;height:.6rem;background:#e6edf3;border-radius:6px;overflow:hidden">'
-            f'<span style="display:block;height:100%;width:{p * 100:.1f}%;background:{bg};border-radius:6px"></span></span>'
-            f'<span style="width:2.8rem;text-align:right;font-size:.85rem">{p:.0%}</span></div>')
+            f'<div style="display:flex;align-items:center;gap:.6rem;margin:.32rem 0;font-weight:{weight};color:{INK}">'
+            f'<span style="width:5.2rem;font:inherit;font-size:.85rem">{k}</span>'
+            f'<span style="flex:1;height:.55rem;background:{PANEL_2};border:1px solid {LINE};border-radius:2px;overflow:hidden">'
+            f'<span style="display:block;height:100%;width:{p * 100:.1f}%;background:{bg}"></span></span>'
+            f'<span style="width:2.8rem;text-align:right;font-family:{MONO};font-size:.82rem">{p:.0%}</span></div>')
     return "".join(rows)
-
 
 def relation_cards_html(record):
     """One row per relation: [head] TYPE -> [tail], with how reliable that type was measured to be."""
@@ -175,20 +221,19 @@ def relation_cards_html(record):
             meta += " · low confidence"
         rows.append(
             f'<div style="display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;padding:.55rem .3rem;'
-            f'border-bottom:1px solid {BORDER}">'
-            f'<span style="background:{LABEL_COLORS.get(r["head"]["label"], "#ddd")};color:#111;padding:2px 10px;'
-            f'border-radius:10px;font-size:.88rem">{_safe(r["head"]["text"])}</span>'
-            f'<span style="color:{NAVY};font-weight:700;font-size:.78rem;letter-spacing:.05em">'
+            f'border-bottom:1px solid {LINE}">'
+            f'<span style="background:{LABEL_COLORS.get(r["head"]["label"], "#ccc")};color:{BG};padding:2px 9px;'
+            f'border-radius:3px;font-size:.88rem">{_safe(r["head"]["text"])}</span>'
+            f'<span style="color:{FLARE};font:600 .74rem/1 {MONO};letter-spacing:.05em">'
             f'{html.escape(r["type"])} &#8594;</span>'
-            f'<span style="background:{LABEL_COLORS.get(r["tail"]["label"], "#ddd")};color:#111;padding:2px 10px;'
-            f'border-radius:10px;font-size:.88rem">{_safe(tail)}</span>'
-            f'<span style="margin-left:auto;color:#6b7a86;font-size:.76rem">{html.escape(meta)}</span></div>')
+            f'<span style="background:{LABEL_COLORS.get(r["tail"]["label"], "#ccc")};color:{BG};padding:2px 9px;'
+            f'border-radius:3px;font-size:.88rem">{_safe(tail)}</span>'
+            f'<span style="margin-left:auto;color:{MUTED};font:.72rem/1.3 {MONO}">{html.escape(meta)}</span></div>')
     if not rows:
         return ""
-    rows[-1] = rows[-1].replace(f"border-bottom:1px solid {BORDER}", "border-bottom:0", 1)   # no rule under the last row
-    return (f'<div style="background:#fff;border:1px solid {BORDER};border-radius:12px;padding:.3rem .8rem">'
+    rows[-1] = rows[-1].replace(f"border-bottom:1px solid {LINE}", "border-bottom:0", 1)   # no rule under the last row
+    return (f'<div style="background:{PANEL};border:1px solid {LINE};border-radius:4px;padding:.3rem .8rem">'
             + "".join(rows) + "</div>")
-
 
 def cause_html(pred, top=3):
     """The predicted cause as a badge, then the top classes as probability bars."""
@@ -198,16 +243,15 @@ def cause_html(pred, top=3):
         p = min(max(float(p), 0.0), 1.0)
         weight = "700" if i == 0 else "400"
         rows.append(
-            f'<div style="display:flex;align-items:center;gap:.6rem;margin:.3rem 0;font-weight:{weight}">'
+            f'<div style="display:flex;align-items:center;gap:.6rem;margin:.32rem 0;font-weight:{weight};color:{INK}">'
             f'<span style="width:11rem;font-size:.85rem">{html.escape(label.capitalize())}</span>'
-            f'<span style="flex:1;height:.6rem;background:#e6edf3;border-radius:6px;overflow:hidden">'
-            f'<span style="display:block;height:100%;width:{p * 100:.1f}%;background:{TEAL};border-radius:6px"></span></span>'
-            f'<span style="width:2.8rem;text-align:right;font-size:.85rem">{p:.0%}</span></div>')
-    badge = (f'<div style="display:inline-block;background:{NAVY};color:#fff;padding:.4rem 1.3rem;'
-             'border-radius:999px;font-weight:800;letter-spacing:.04em;font-size:1rem;margin:.2rem 0 .8rem 0">'
-             f'{html.escape(pred["label"].capitalize())}</div>')
+            f'<span style="flex:1;height:.55rem;background:{PANEL_2};border:1px solid {LINE};border-radius:2px;overflow:hidden">'
+            f'<span style="display:block;height:100%;width:{p * 100:.1f}%;background:{GAS}"></span></span>'
+            f'<span style="width:2.8rem;text-align:right;font-family:{MONO};font-size:.82rem">{p:.0%}</span></div>')
+    badge = (f'<div style="display:inline-block;border:1.5px solid {GAS};color:{GAS};background:{BG};'
+             f'padding:.34rem 1.1rem;border-radius:3px;font:700 1.15rem/1.2 {DISPLAY};letter-spacing:.08em;'
+             f'text-transform:uppercase;margin:.2rem 0 .8rem 0">{html.escape(pred["label"].capitalize())}</div>')
     return badge + "".join(rows)
-
 
 def accuracy_cards_html():
     items = [("Entity tagging", "F1 0.61", "840 held-out spans"),
@@ -215,18 +259,17 @@ def accuracy_cards_html():
              ("Severity", "Macro-F1 0.78", "1,921 held-out narratives"),
              ("Cause", "Macro-F1 0.75", "1,921 held-out narratives")]
     return "".join(
-        f'<div style="background:#fff;border:1px solid {BORDER};border-radius:10px;padding:.55rem .8rem;margin-bottom:.5rem">'
-        f'<div style="font-size:.72rem;color:#5b6b78;text-transform:uppercase;letter-spacing:.07em">{a}</div>'
-        f'<div style="font-size:1.15rem;font-weight:800;color:{NAVY}">{b}</div>'
-        f'<div style="font-size:.78rem;color:#6b7a86">{c}</div></div>' for a, b, c in items)
-
+        f'<div style="background:{PANEL};border:1px solid {LINE};border-left:3px solid {FLARE};border-radius:3px;'
+        f'padding:.5rem .75rem;margin-bottom:.5rem">'
+        f'<div style="font:600 .64rem/1.3 {MONO};color:{MUTED};text-transform:uppercase;letter-spacing:.1em">{a}</div>'
+        f'<div style="font:600 1.08rem/1.3 {MONO};color:{INK}">{b}</div>'
+        f'<div style="font-size:.76rem;color:{MUTED}">{c}</div></div>' for a, b, c in items)
 
 def entity_guide_html():
     return "".join(
         f'<div style="margin:.45rem 0 .6rem 0">{_chip(label)}'
-        f'<div style="font-size:.78rem;color:#44525d;margin:.2rem 0 0 .15rem">{html.escape(desc)}</div></div>'
+        f'<div style="font-size:.78rem;color:{MUTED};margin:.25rem 0 0 .15rem">{html.escape(desc)}</div></div>'
         for label, desc in ENTITY_HELP.items())
-
 
 def highlight_html(text, entities):
     """Narrative as one HTML block with each entity span highlighted and labelled."""
@@ -234,17 +277,17 @@ def highlight_html(text, entities):
     for e in sorted(entities, key=lambda e: (e["start"], -e["end"])):
         if e["start"] < pos:            # overlapping span: keep the first
             continue
-        color = LABEL_COLORS.get(e["label"], "#ddd")
+        color = LABEL_COLORS.get(e["label"], "#ccc")
         out.append(_safe(text[pos:e["start"]]))
         out.append(
-            f'<mark style="background:{color};color:#111;padding:1px 3px;border-radius:3px" '
+            f'<mark style="background:{color};color:{BG};padding:1px 3px;border-radius:2px" '
             f'title="{html.escape(e["label"])}">{_safe(text[e["start"]:e["end"]])}'
-            f'<sup style="font-size:0.6em;margin-left:2px">{html.escape(e["label"])}</sup></mark>'
+            f'<sup style="font:600 0.58em {MONO};margin-left:3px;opacity:.75">{html.escape(e["label"])}</sup></mark>'
         )
         pos = e["end"]
     out.append(_safe(text[pos:]))
-    return (f'<div style="line-height:2.2;font-size:0.95rem;background:#fff;border:1px solid {BORDER};'
-            'border-radius:12px;padding:.9rem 1.1rem;max-height:440px;overflow-y:auto">' + "".join(out) + "</div>")
+    return (f'<div style="line-height:2.25;font-size:0.95rem;color:{INK};background:{PANEL};border:1px solid {LINE};'
+            'border-radius:4px;padding:.9rem 1.1rem;max-height:440px;overflow-y:auto">' + "".join(out) + "</div>")
 
 
 def legend_html(entities, with_counts=False):
@@ -252,6 +295,19 @@ def legend_html(entities, with_counts=False):
     for e in entities:
         counts[e["label"]] = counts.get(e["label"], 0) + 1
     return "".join(_chip(l, f"{l} · {counts[l]}" if with_counts else None) for l in sorted(counts))
+
+
+def page_header_html(eyebrow, title, lead):
+    """Compact header for secondary pages, in the same style as the hero."""
+    return (f'<div style="background:{PANEL};border:1px solid {LINE};border-radius:6px;overflow:hidden;margin-bottom:.8rem">'
+            '<div style="padding:1.1rem 1.5rem">'
+            f'<div style="font:600 .72rem/1 {MONO};letter-spacing:.16em;text-transform:uppercase;color:{FLARE}">'
+            f'{html.escape(eyebrow)}</div>'
+            f'<div style="font:700 2rem/1.1 {DISPLAY};letter-spacing:.02em;text-transform:uppercase;color:{INK};'
+            f'margin:.4rem 0 .35rem 0">{html.escape(title)}</div>'
+            f'<div style="font-size:.95rem;color:{MUTED};max-width:44rem">{html.escape(lead)}</div></div>'
+            f'<div style="height:5px;background:repeating-linear-gradient(-45deg,{MARKER} 0 10px,{BG} 10px 20px)"></div>'
+            '</div>')
 
 
 def relations_dataframe(record):
