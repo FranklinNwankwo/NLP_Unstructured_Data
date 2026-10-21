@@ -1,6 +1,6 @@
 # PHMSA Incident Extraction
 
-[![tests](https://github.com/FranklinNwankwo/NLP_Unstructured_Data/actions/workflows/tests.yml/badge.svg)](https://github.com/FranklinNwankwo/NLP_Unstructured_Data/actions/workflows/tests.yml)
+[![tests](https://github.com/FranklinNwankwo/NLP_Unstructured_Data/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/FranklinNwankwo/NLP_Unstructured_Data/actions/workflows/tests.yml)
 
 **Turning free-text pipeline incident narratives into structured records: entities, relations between them, and a severity prediction, plus cited question answering over all incidents.**
 
