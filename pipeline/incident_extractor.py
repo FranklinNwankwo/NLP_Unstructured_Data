@@ -4,6 +4,7 @@ End-to-end incident extraction (Phase 7).
     narrative -> sentences -> NER -> negation filter -> merge split spans
               -> relations (per sentence, deduped per narrative)
     narrative -> severity classifier (whole narrative)
+    narrative -> cause classifier (whole narrative, optional)
 
 Returns one JSON-serializable record per narrative. All character offsets are
 relative to the original narrative string.
@@ -21,13 +22,13 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-for _sub in ("relation_extraction", "ner_model", "severity_model"):
+for _sub in ("relation_extraction", "ner_model", "severity_model", "cause_model"):
     sys.path.insert(0, str(ROOT / _sub))
 
 import spacy
 from extract_relations import classify_quantity, dedupe, extract_relations, normalize_entities
 
-MIN_NARRATIVE_WORDS = 5     # same cut-off as the severity training data
+MIN_NARRATIVE_WORDS = 5     # same cut-off as the severity and cause training data
 MIN_SENTENCE_WORDS = 3      # same cut-off as the annotated sentences
 
 # "no/none/zero" reach up to 3 words ahead ("NO REPORTED FATALITIES OR INJURIES");
@@ -45,9 +46,10 @@ def is_negated(sentence, start):
 
 
 class IncidentExtractor:
-    def __init__(self, ner, severity):
+    def __init__(self, ner, severity, cause=None):
         self.ner = ner
         self.severity = severity
+        self.cause = cause          # optional: records get "cause": None when it is not loaded
         self.splitter = spacy.blank("en")
         self.splitter.add_pipe("sentencizer")
 
@@ -55,7 +57,9 @@ class IncidentExtractor:
     def load_default(cls):
         from predict import NERPredictor                    # ner_model/predict.py
         from severity_predict import SeverityPredictor      # severity_model/severity_predict.py
-        return cls(NERPredictor(), SeverityPredictor())
+        from cause_predict import MODEL_DIR as CAUSE_DIR, CausePredictor   # cause_model/cause_predict.py
+        cause = CausePredictor() if (CAUSE_DIR / "config.json").exists() else None
+        return cls(NERPredictor(), SeverityPredictor(), cause)
 
     def extract(self, narrative, commodity_type=None):
         return self.extract_many([narrative], [commodity_type])[0]
@@ -78,7 +82,7 @@ class IncidentExtractor:
         # 2. NER over all sentences at once
         raw = self.ner.predict([s[2] for s in sentences]) if sentences else []
 
-        records = [{"commodity_type": commodities[i], "narrative": texts[i], "severity": None,
+        records = [{"commodity_type": commodities[i], "narrative": texts[i], "severity": None, "cause": None,
                     "entities": [], "relations": [], "dropped_negated": []} for i in range(n)]
         rels = [[] for _ in range(n)]
 
@@ -109,14 +113,19 @@ class IncidentExtractor:
                     "head": self._span(r["head"], off), "tail": self._span(r["tail"], off),
                 })
 
-        # 4. severity over the whole narrative
+        # 4. severity and cause over the whole narrative
         eligible = [i for i, t in enumerate(texts) if len(t.split()) >= MIN_NARRATIVE_WORDS]
         if eligible:
-            for i, p in zip(eligible, self.severity.predict([texts[i] for i in eligible])):
+            batch = [texts[i] for i in eligible]
+            for i, p in zip(eligible, self.severity.predict(batch)):
                 records[i]["severity"] = p
+            if self.cause is not None:
+                for i, p in zip(eligible, self.cause.predict(batch)):
+                    records[i]["cause"] = p
         for rec in records:
             if rec["severity"] is None:
-                rec["note"] = f"narrative has fewer than {MIN_NARRATIVE_WORDS} words, severity not predicted"
+                rec["note"] = (f"narrative has fewer than {MIN_NARRATIVE_WORDS} words, "
+                               f"severity{' and cause' if self.cause is not None else ''} not predicted")
         return records
 
     @staticmethod

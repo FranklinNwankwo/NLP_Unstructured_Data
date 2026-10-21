@@ -41,6 +41,12 @@ TABLE = {
     S4: [("LINE", "EQUIPMENT"), ("FIRE", "CONSEQUENCE")],
     S5: [("RELEASE", "CONSEQUENCE"), ("INTERNAL", "FAILURE_MODE"), ("CORROSION", "FAILURE_MODE")],
 }
+class FakeCause:
+    def predict(self, texts):
+        return [{"label": "CORROSION FAILURE", "probabilities": {"CORROSION FAILURE": 0.9, "EQUIPMENT FAILURE": 0.1}}
+                for _ in texts]
+
+
 ex = IncidentExtractor(FakeNER(TABLE), FakeSeverity())
 failures = 0
 
@@ -100,6 +106,18 @@ check("short narrative: no severity, has a note", recs[0]["severity"] is None an
 check("batch order and commodity preserved",
       recs[1]["severity"]["label"] == "minor" and [r["commodity_type"] for r in recs] == ["gas_distribution", "hazardous_liquid"])
 check("empty and None narratives do not crash", ex.extract_many([None, ""])[0]["entities"] == [])
+
+# 7b. cause: absent without a cause model, predicted with one, skipped for short narratives
+check("no cause model: cause is None", rec["cause"] is None and recs[1]["cause"] is None)
+ex_c = IncidentExtractor(FakeNER(TABLE), FakeSeverity(), FakeCause())
+recs_c = ex_c.extract_many(["SEE ABOVE", S5 + " " + S1], ["gas_distribution", "hazardous_liquid"])
+check("cause model: cause predicted for a normal narrative",
+      recs_c[1]["cause"] == {"label": "CORROSION FAILURE",
+                             "probabilities": {"CORROSION FAILURE": 0.9, "EQUIPMENT FAILURE": 0.1}})
+check("cause model: short narrative gets no cause and the note says so",
+      recs_c[0]["cause"] is None and "cause" in recs_c[0]["note"])
+check("cause model: entities and severity unchanged by adding it",
+      recs_c[1]["entities"] == ex.extract(S5 + " " + S1)["entities"] and recs_c[1]["severity"]["label"] == "minor")
 
 # 8. records are JSON-serializable
 import json

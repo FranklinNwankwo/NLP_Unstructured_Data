@@ -103,6 +103,7 @@ Each narrative produces one JSON record:
   "commodity_type": str | null,
   "narrative": str,
   "severity": {"label": "minor|moderate|severe|critical", "probabilities": {label: float}} | null,
+  "cause":    {"label": one of 8 PHMSA cause categories, "probabilities": {label: float}} | null,   # null without the cause model
   "entities":  [{"text", "label", "start", "end", "sentence_index", "unit_type"?}],   # offsets into the narrative
   "relations": [{"type", "confidence": "rule|low", "sentence_index",
                  "head": {text, label, start, end}, "tail": {text, label, start, end, unit_type?}}],
@@ -132,7 +133,8 @@ flowchart LR
   I --> K
   K --> L["Streamlit app"]
   A --> P["Cause labels<br/>from PHMSA CAUSE field"]
-  P --> Q["DistilBERT cause<br/>Colab, not yet in the pipeline"]
+  P --> Q["DistilBERT cause<br/>Colab"]
+  Q --> K
 ```
 
 ### 3.2 What runs when you submit a narrative
@@ -147,6 +149,8 @@ flowchart TD
   M --> R["Relation rules<br/>per sentence, deduplicated per narrative"]
   R --> J["JSON record"]
   V --> J
+  N --> C["Cause classifier<br/>DistilBERT, whole narrative"]
+  C --> J
 ```
 
 ### 3.3 What runs when you ask the RAG page a question
@@ -857,7 +861,7 @@ Always predicting the largest class ("equipment failure") scores accuracy 0.350 
 
 **Local reproduction.** `cause_model/check_cause_local.py` re-scored all 1,921 test narratives on a laptop CPU in 722 seconds (about 0.38 s per narrative) and reproduced the Colab classification report exactly (macro-F1 0.748, accuracy 0.818). The inference code reuses the severity encoding (`cause_model/cause_predict.py`).
 
-**Status.** The cause model is trained and evaluated but **not yet part of the pipeline or the demo**. A finer sub-cause level (for example natural force damage, frost heave) is supported by `export_for_colab.py --level detail` and has not been run.
+**Status.** The cause is part of the pipeline output (`cause` in each record) and is shown in the demo next to severity, with its top three categories (section 13). A finer sub-cause level (for example natural force damage, frost heave) is supported by `export_for_colab.py --level detail` and has not been run.
 
 ---
 
@@ -872,7 +876,7 @@ Always predicting the largest class ("equipment failure") scores accuracy 0.350 
 3. **Negation filter** (below).
 4. **Merge** adjacent same-label spans; attach a unit type to each `QUANTITY`.
 5. **Relations** per sentence, then deduplicated per narrative on (type, head text, tail text).
-6. **Severity** over the whole narrative, skipped (with a note in the record) when the narrative has fewer than 5 words, the same cut-off used in training.
+6. **Severity and cause** over the whole narrative, skipped (with a note in the record) when the narrative has fewer than 5 words, the same cut-off used in training. The cause model is optional: without it, `cause` is `null` and everything else is unchanged.
 
 **The negation filter.** Negated consequences ("NO REPORTABLE INJURY") are real model errors: the NER model tags them. I ported the idea from the Phase 1 weak-labeler but made three deliberate choices:
 
@@ -896,7 +900,7 @@ Dropped spans are returned in `dropped_negated`, so nothing disappears silently.
 | Static Space with a screen recording | Prepared as the fallback if memory failed; not needed |
 | AWS Lightsail container or instance | Priced and rejected for now: a 4 GB Lightsail instance was quoted at about $24 a month (flat, but a stopped instance keeps billing), which is a recurring cost for a portfolio demo. The Dockerfile in `demo/space/` is a starting point if I host it on AWS later |
 
-**Where the model weights live.** Both models are in one **public** Hugging Face model repo, `Chinonso11/phmsa-incident-models`, as subfolders `ner/` (266 MB) and `severity/` (268 MB), with a model card that lists the results and limits. Public so the hosted app needs no secrets. `training_args.bin` is excluded from the upload because it is a pickle file. The app downloads both folders on the first Extract click with `snapshot_download`, and `st.cache_resource` keeps them loaded.
+**Where the model weights live.** All three models are in one **public** Hugging Face model repo, `Chinonso11/phmsa-incident-models`, as subfolders `ner/` (266 MB), `severity/` (268 MB) and `cause/` (a DistilBERT of the same size), with a model card that lists the results and limits. Public so the hosted app needs no secrets. `training_args.bin` is excluded from the upload because it is a pickle file. The app downloads the three folders on the first Extract click with `snapshot_download`, and `st.cache_resource` keeps them loaded.
 
 **Optional S3 archive.** `demo/archive_to_s3.py` copies both models and the sample output to an S3 bucket for a backup that does not depend on Hugging Face (designed for a versioned bucket and an IAM policy limited to that bucket). The live app does not use S3.
 
@@ -908,6 +912,8 @@ Dropped spans are returned in `dropped_negated`, so nothing disappears silently.
 | Result stored in `st.session_state` | the Download button reruns the script; without session state the output would vanish |
 | Highlighted narrative built as one HTML block with `$` escaped to `&#36;` and newlines turned into `<br>` | `$50,000` would otherwise trigger LaTeX rendering, and a blank line would end the HTML block and break the layout |
 | Overlapping or adjacent spans: keep the first | the model cannot emit overlaps, but the helper must never duplicate text |
+| Cause panel under severity: the predicted category plus the top three with their probabilities | the second and third choices show where the model hesitates (often equipment failure vs incorrect operation) |
+| The app starts even if the cause model is missing from the Hub, and says so | the cause model was added after the first deployment; the other outputs must not depend on it |
 | Severity bars with `st.progress` | bars keep the classes in severity order (a plain bar chart can sort categories alphabetically) |
 | Relations table shows "Sample review" counts per type (for example "6 of 15 correct" for `REMEDIATED_BY`) | users see how reliable each relation type was measured to be |
 | Text box limited to 8,000 characters | bounds CPU time on the free host |
@@ -963,7 +969,7 @@ that does not exist; after tightening the prompt, the only error in 18 answers w
 
 **Model behavior**
 
-11. **Root-cause spans are not extracted** (`CAUSE_FACTOR` F1 0.00). Two relations depend on it and never fire. The report-level cause classifier (12.8) predicts PHMSA's 8 apparent-cause categories, which reflect the operator's own judgment, and is not yet part of the pipeline or the demo.
+11. **Root-cause spans are not extracted** (`CAUSE_FACTOR` F1 0.00). Two relations depend on it and never fire. The report-level cause classifier (12.8) predicts PHMSA's 8 apparent-cause categories, which reflect the operator's own judgment.
 12. **Severity labels are flag-derived.** About 38% of critical narratives never mention a death, and the model detects none of those. Severity says nothing about spill size or environmental damage, and 97% of liquid reports are "minor".
 13. **Entity errors propagate into relations**, and relation rules are per sentence only.
 14. **Domain.** Trained and tested only on PHMSA narratives (short, upper-case, English). No evidence about other text. Both models are uncased.
@@ -1062,7 +1068,7 @@ Every non-trivial decision, the alternatives I considered, and the reason or evi
 | # | Decision | Alternatives | Reason and evidence |
 |---|---|---|---|
 | 43 | Negation filter on `CONSEQUENCE` only, windows of 3 and 2 words | all types; uniform window | Negation was concentrated in consequences; a uniform window deleted real fires (13.1) |
-| 44 | Both models in one public Hugging Face model repo | private repo; S3 only | Public needs no secrets; one download for the app (13.2) |
+| 44 | All three models in one public Hugging Face model repo | private repo; S3 only | Public needs no secrets; one download for the app (13.2) |
 | 45 | Streamlit Community Cloud | Hugging Face Space, AWS Lightsail | Spaces needed a paid plan; Lightsail is a recurring cost (13.2) |
 | 46 | Show measured accuracy and limits inside the app | omit | The app should never look more reliable than it is (13.3) |
 | 47 | Reproduce both models locally against Colab's numbers | trust the download | NER 0.608 and severity 0.777 matched exactly (10.6, 12.7) |
@@ -1111,7 +1117,7 @@ Listed because they show how problems were caught, and because several change ho
 **Highest-value next steps**
 
 1. **A second annotator** on a subset to measure agreement, and an independent human re-check of the relation judgments and the `CAUSE_FACTOR` relabel.
-2. **Put the cause model into the pipeline and the demo** (section 12.8), and try the sub-cause level (`python cause_model/export_for_colab.py --level detail`, for example natural force damage, frost heave).
+2. **Sub-causes.** Try the finer cause level (`python cause_model/export_for_colab.py --level detail`, for example natural force damage, frost heave) on top of the 8 categories (section 12.8).
 3. **Gold relations on a small set** so relation recall can be measured, and the two stoplist/blocker fixes measured on a fresh sample.
 4. **Verb-based and cross-sentence relations** (most cause and effect is in verbs such as "struck").
 5. **Test the hospitalization hypothesis** for `severe`, ideally with a spill-size or environmental tier for liquids (decision B).

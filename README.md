@@ -16,7 +16,7 @@
 - **What does not work.** Root-cause *spans* are not extracted (F1 0.00), so the cause is predicted per report instead; severity cannot see a death the narrative never mentions.
 - **Try it:** [live demo](https://nlp-on-oil-and-gas-unstructured-data.streamlit.app) (sleeps when idle, so the first load is slow) · [models on Hugging Face](https://huggingface.co/Chinonso11/phmsa-incident-models) · [full engineering log](docs/ENGINEERING_LOG.md)
 - **What I'd do next:**
-  - Put the cause model into the pipeline and demo, and predict sub-causes (for example natural force damage, frost heave)
+  - Predict sub-causes (for example natural force damage, frost heave) on top of the 8 cause categories
   - Add a second annotator to measure label agreement, and gold relations to measure relation recall
   - Link cause and effect expressed by verbs and across sentences, where most of it lives
 

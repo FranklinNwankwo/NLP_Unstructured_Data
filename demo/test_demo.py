@@ -64,7 +64,7 @@ check("measured counts match the precision check (62 of 90)", sum(c for c, _ in 
       and sum(n for _, n in RELATION_PRECISION.values()) == 90)
 
 # ---- 1b. visual helpers -----------------------------------------------------
-from ui_helpers import (SEVERITY_ORDER, accuracy_cards_html, entity_guide_html, hero_html,
+from ui_helpers import (SEVERITY_ORDER, accuracy_cards_html, cause_html, entity_guide_html, hero_html,
                         probability_bars_html, relation_cards_html, severity_badge_html,
                         stat_cards_html, step_html)
 
@@ -81,13 +81,14 @@ check("relation cards: empty string when there are no relations", relation_cards
 check("legend with counts shows how many of each",
       "EQUIPMENT · 2" in legend_html([{"label": "EQUIPMENT"}, {"label": "EQUIPMENT"}], with_counts=True))
 blocks = [hero_html(), step_html(2, "x"), stat_cards_html([("A", 1)]), severity_badge_html("minor"), bars, cards,
+          cause_html({"label": "CORROSION FAILURE", "probabilities": {"CORROSION FAILURE": 1.0}}),
           accuracy_cards_html(), entity_guide_html(), h]
 check("HTML blocks have no blank line (it would end the block in Streamlit markdown)",
       all("\n\n" not in b for b in blocks))
 
 # ---- 2. the Space folder ---------------------------------------------------
 needed = ["app.py", "ui_helpers.py", "requirements.txt", "Dockerfile", "README.md", "incident_extractor.py",
-          "extract_relations.py", "predict.py", "severity_predict.py", "examples.json"]
+          "extract_relations.py", "predict.py", "severity_predict.py", "cause_predict.py", "examples.json"]
 missing = [n for n in needed if not (SPACE / n).exists()]
 check("space folder has every file the app needs", not missing, f"missing: {missing}")
 check("README front matter selects the Docker SDK on port 8501",
@@ -135,9 +136,20 @@ class FakeSeverity:
 
 
 sys.modules["predict"] = types.SimpleNamespace(NERPredictor=FakeNER)
+class FakeCause:
+    def __init__(self, model_dir=None):
+        pass
+
+    def predict(self, texts):
+        return [{"label": "EXCAVATION DAMAGE",
+                 "probabilities": {"EXCAVATION DAMAGE": 0.8, "OTHER OUTSIDE FORCE DAMAGE": 0.15, "CORROSION FAILURE": 0.05}}
+                for _ in texts]
+
+
 sys.modules["severity_predict"] = types.SimpleNamespace(SeverityPredictor=FakeSeverity)
+sys.modules["cause_predict"] = types.SimpleNamespace(CausePredictor=FakeCause)
 tmp = tempfile.mkdtemp()
-os.environ["PHMSA_NER_DIR"] = os.environ["PHMSA_SEVERITY_DIR"] = tmp
+os.environ["PHMSA_NER_DIR"] = os.environ["PHMSA_SEVERITY_DIR"] = os.environ["PHMSA_CAUSE_DIR"] = tmp
 
 at = AppTest.from_file(str(SPACE / "app.py"), default_timeout=120).run()
 check("app starts without an exception", not at.exception, str([e.value for e in at.exception]))
@@ -150,6 +162,8 @@ check("clicking Extract runs without an exception", not at.exception, str([e.val
 md = " ".join(m.value for m in at.markdown)
 check("result shows highlighted entities", "<mark" in md and "EQUIPMENT" in md)
 check("result shows the predicted severity", "MODERATE" in md and len(at.subheader) >= 2)
+check("result shows the predicted cause with its top classes",
+      "Excavation damage" in md and "Other outside force damage" in md and "80%" in md)
 
 at.selectbox[0].select("My own text").run()
 check("choosing 'My own text' empties the box", at.text_area[0].value == "" and not at.exception)
@@ -157,6 +171,16 @@ at.text_area[0].set_value("THE METER SET AT 5064 JENNIFER CIRCLE WAS DAMAGED BY 
 at.button[0].click().run()
 check("pasting your own text works", not at.exception and "<mark" in " ".join(m.value for m in at.markdown),
       str([e.value for e in at.exception]))
+
+# without a cause model the app still runs and says so
+del os.environ["PHMSA_CAUSE_DIR"]
+import streamlit as st
+st.cache_resource.clear()                  # otherwise the first app's extractor (with a cause model) is reused
+at2 = AppTest.from_file(str(SPACE / "app.py"), default_timeout=120).run()
+at2.button[0].click().run()
+check("no cause model: app still works and says the cause is unavailable",
+      not at2.exception and any("cause model is not available" in i.value for i in at2.info),
+      str([e.value for e in at2.exception]))
 
 print(f"\n{'ALL PASSED' if not failures else str(failures) + ' FAILED'}")
 sys.exit(1 if failures else 0)

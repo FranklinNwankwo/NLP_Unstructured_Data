@@ -16,8 +16,9 @@ Paste a free-text pipeline incident narrative and get back a structured record:
 - **Entities** such as equipment, failure modes, consequences, actions taken, quantities, locations and dates
 - **Relations** between them (what was located where, what was caused by what, what was done about it)
 - **Severity** (minor, moderate, severe, critical) predicted from the whole narrative
+- **Cause** (PHMSA's 8 apparent-cause categories) predicted from the whole narrative
 
-Two fine-tuned DistilBERT models (entity tagging and severity) plus a rule-based relation layer,
+Three fine-tuned DistilBERT models (entity tagging, severity and cause) plus a rule-based relation layer,
 trained on public PHMSA incident reports for gas distribution, gas transmission and gathering,
 and hazardous liquid pipelines.
 

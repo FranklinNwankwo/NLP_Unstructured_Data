@@ -1,4 +1,4 @@
-"""Streamlit demo: PHMSA incident narrative -> entities, relations, severity."""
+"""Streamlit demo: PHMSA incident narrative -> entities, relations, severity, cause."""
 
 import json
 import os
@@ -7,31 +7,40 @@ from pathlib import Path
 
 import streamlit as st
 
-from ui_helpers import (ABOUT_MD, CSS, SEVERITY_NOTE, accuracy_cards_html, entities_dataframe,
+from ui_helpers import (ABOUT_MD, CAUSE_NOTE, CSS, SEVERITY_NOTE, accuracy_cards_html, cause_html, entities_dataframe,
                         entity_guide_html, hero_html, highlight_html, legend_html,
                         probability_bars_html, relation_cards_html, relations_dataframe,
                         severity_badge_html, stat_cards_html, step_html)
 
 HERE = Path(__file__).resolve().parent
 st.set_page_config(page_title="PHMSA incident extraction", page_icon="\U0001F50E", layout="wide",
-                   menu_items={"About": "Entities, relations and severity from PHMSA pipeline incident narratives. "
+                   menu_items={"About": "Entities, relations, severity and cause from PHMSA pipeline incident narratives. "
                                         "A portfolio project, not for operational, safety or regulatory decisions."})
 st.markdown("<style>" + CSS + "</style>", unsafe_allow_html=True)
 
 
-@st.cache_resource(show_spinner="Loading models (the first start downloads about 500 MB)...")
+@st.cache_resource(show_spinner="Loading models (the first start downloads about 800 MB)...")
 def load_extractor():
     ner_dir, sev_dir = os.environ.get("PHMSA_NER_DIR"), os.environ.get("PHMSA_SEVERITY_DIR")
+    cause_dir = os.environ.get("PHMSA_CAUSE_DIR")
     repo_file = HERE / "model_repo.txt"
     repo = repo_file.read_text().strip() if repo_file.exists() else None
     if not (ner_dir and sev_dir):
         from huggingface_hub import snapshot_download
-        root = Path(snapshot_download(repo_id=repo, allow_patterns=["ner/*", "severity/*"]))
+        root = Path(snapshot_download(repo_id=repo, allow_patterns=["ner/*", "severity/*", "cause/*"]))
         ner_dir, sev_dir = root / "ner", root / "severity"
+        cause_dir = cause_dir or root / "cause"
     from incident_extractor import IncidentExtractor
     from predict import NERPredictor
     from severity_predict import SeverityPredictor
-    return IncidentExtractor(NERPredictor(ner_dir), SeverityPredictor(sev_dir)), repo
+    cause = None
+    if cause_dir:
+        try:                                  # optional: the app still works if the cause model is not uploaded
+            from cause_predict import CausePredictor
+            cause = CausePredictor(cause_dir)
+        except Exception:
+            cause = None
+    return IncidentExtractor(NERPredictor(ner_dir), SeverityPredictor(sev_dir), cause), repo
 
 
 # ---------------------------------------------------------------- sidebar
@@ -67,9 +76,10 @@ with st.container(border=True):
 
 if run:
     extractor, _ = load_extractor()
-    with st.spinner("Running entity extraction, relations and severity..."):
+    with st.spinner("Running entity extraction, relations, severity and cause..."):
         started = time.perf_counter()
         st.session_state["record"] = extractor.extract(text)
+        st.session_state["has_cause"] = extractor.cause is not None
         st.session_state["elapsed"] = time.perf_counter() - started
 
 # ---------------------------------------------------------------- results
@@ -100,6 +110,16 @@ else:
         else:
             st.info(record.get("note", "Severity was not predicted."))
         st.caption(SEVERITY_NOTE)
+
+        st.subheader("Predicted cause")
+        cause = record.get("cause")
+        if cause:
+            st.markdown(cause_html(cause), unsafe_allow_html=True)
+            st.caption(CAUSE_NOTE)
+        elif not st.session_state.get("has_cause"):
+            st.info("The cause model is not available in this deployment.")
+        else:
+            st.info(record.get("note", "Cause was not predicted."))
 
     st.subheader("Relations")
     cards = relation_cards_html(record)

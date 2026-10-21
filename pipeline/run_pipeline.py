@@ -21,7 +21,7 @@ sys.path.insert(0, str(ROOT / "pipeline"))
 from incident_extractor import IncidentExtractor
 
 
-def show(rec, truth=None):
+def show(rec, truth=None, cause_truth=None):
     print("=" * 78)
     print((rec["commodity_type"] or "narrative").upper())
     print("=" * 78)
@@ -37,6 +37,13 @@ def show(rec, truth=None):
         print(line)
     else:
         print(f"\nSeverity: not predicted ({rec.get('note')})")
+
+    cause = rec.get("cause")
+    if cause:
+        top = sorted(cause["probabilities"].items(), key=lambda kv: -kv[1])[:3]
+        print(f"Cause: {cause['label']}   (" + ", ".join(f"{k.lower()} {v:.0%}" for k, v in top) + ")")
+        if cause_truth:
+            print(f"PHMSA apparent cause: {cause_truth}")
 
     by = {}
     for e in rec["entities"]:
@@ -68,11 +75,16 @@ def pick_demo_narratives(seed, per_commodity):
     for r in data["test"]:
         if 60 <= len(r["text"].split()) <= 250:       # readable length
             by.setdefault(r["commodity_type"], []).append(r)
+    causes = {}
+    cause_path = ROOT / "data/processed/cause_colab_export.json"
+    if cause_path.exists():                            # same split, so the same narratives are in its test set
+        cdata = json.load(open(cause_path, encoding="utf-8"))
+        causes = {r["text"]: cdata["labels"][r["label"]] for r in cdata["test"]}
     rng = random.Random(seed)
     picked = []
     for c in sorted(by):
         for r in rng.sample(by[c], min(per_commodity, len(by[c]))):
-            picked.append((r["text"], c, labels[r["label"]]))
+            picked.append((r["text"], c, labels[r["label"]], causes.get(r["text"])))
     return picked
 
 
@@ -85,20 +97,22 @@ def main():
     args = ap.parse_args()
 
     if args.file:
-        items = [(Path(args.file).read_text(encoding="utf-8", errors="replace"), None, None)]
+        items = [(Path(args.file).read_text(encoding="utf-8", errors="replace"), None, None, None)]
     elif args.text:
-        items = [(args.text, None, None)]
+        items = [(args.text, None, None, None)]
     else:
         items = pick_demo_narratives(args.seed, args.per_commodity)
 
     print("Loading models...")
     extractor = IncidentExtractor.load_default()
+    if extractor.cause is None:
+        print("(cause model not found in cause_model/phmsa_cause_model, so no cause is predicted)")
     t0 = time.time()
     records = extractor.extract_many([i[0] for i in items], [i[1] for i in items])
     print(f"Processed {len(items)} narrative(s) in {time.time() - t0:.1f}s\n")
 
-    for rec, (_, _, truth) in zip(records, items):
-        show(rec, truth)
+    for rec, (_, _, truth, cause_truth) in zip(records, items):
+        show(rec, truth, cause_truth)
 
     out = ROOT / "pipeline/sample_output.json"
     with open(out, "w", encoding="utf-8") as f:

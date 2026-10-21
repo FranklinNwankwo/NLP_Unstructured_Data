@@ -42,6 +42,12 @@ SEVERITY_STYLE = {                      # (background, text colour)
     "severe": ("#dd6b20", "#ffffff"), "critical": ("#c53030", "#ffffff"),
 }
 
+CAUSE_NOTE = (
+    "Predicted from the narrative text. The training labels are PHMSA's apparent cause as chosen by the "
+    "operator on the report form, not an independent root-cause investigation. The weakest category is the "
+    "catch-all 'other incident cause'; 'incorrect operation' is often confused with 'equipment failure'."
+)
+
 SEVERITY_NOTE = (
     "Predicted from the narrative text. The training labels came from PHMSA's structured flags "
     "(fatality, injury requiring inpatient hospitalization, ignition, explosion), so this can "
@@ -49,13 +55,14 @@ SEVERITY_NOTE = (
 )
 
 ABOUT_MD = """
-**What this is.** Two fine-tuned DistilBERT models plus a rule-based relation layer, trained on PHMSA
+**What this is.** Three fine-tuned DistilBERT models plus a rule-based relation layer, trained on PHMSA
 pipeline incident reports (gas distribution, gas transmission and gathering, hazardous liquid; 2010 to present).
 
 **Entities** (12 types). Micro-F1 0.608 on 840 held-out spans, against labels from a single annotator.
 Reasonably reliable: quantities (F1 0.85), materials (0.71), dates (0.70), equipment (0.67).
 Weak: failure modes (0.45), locations (0.39), regulatory references (0.08).
-Root causes (`CAUSE_FACTOR`) are **not** extracted: the model scores 0 on them.
+Root-cause spans (`CAUSE_FACTOR`) are **not** extracted (the model scores 0 on them); the cause is predicted
+for the whole narrative instead (below).
 
 **Relations** are rules applied to the entities within one sentence. 15 sampled relations per type (90 in
 total) were reviewed by hand against a written rubric, starting from AI-drafted judgments:
@@ -65,6 +72,10 @@ are small samples, so treat them as rough. `REMEDIATED_BY` is the least reliable
 **Severity** (minor, moderate, severe, critical) is predicted from the whole narrative: macro-F1 0.777 on
 1,921 held-out narratives. The labels come from structured flags, not from the text. By a rough keyword
 estimate about 40% of critical narratives never mention a death, and the model detected none of those in testing.
+
+**Cause** (PHMSA's 8 apparent-cause categories) is predicted from the whole narrative: macro-F1 0.748, accuracy
+0.818 on 1,921 held-out narratives, against 0.706 for a TF-IDF baseline. Excavation damage (F1 0.92), corrosion
+(0.89) and equipment failure (0.86) are reliable; the catch-all "other incident cause" is not (0.38).
 
 **Limits.** Tested only on PHMSA incident narratives. Narratives are short, upper-case, English reports.
 Not for operational, safety or regulatory decisions.
@@ -98,7 +109,7 @@ def hero_html():
             'rgba(255,255,255,.3);color:#fff;padding:.2rem .8rem;border-radius:999px;font-size:.8rem;'
             'margin:0 .45rem .35rem 0">{}</span>')
     pills = "".join(pill.format(t) for t in
-                    ["12 entity types", "6 relation types", "4 severity levels", "2 fine-tuned DistilBERT models"])
+                    ["12 entity types", "6 relation types", "4 severity levels", "8 cause categories", "3 fine-tuned DistilBERT models"])
     return (f'<div style="background:linear-gradient(135deg,{NAVY} 0%,{TEAL} 100%);border-radius:16px;'
             'padding:1.5rem 1.8rem;color:#fff;margin-bottom:.6rem">'
             '<div style="font-size:.76rem;letter-spacing:.16em;text-transform:uppercase;opacity:.78">'
@@ -107,7 +118,7 @@ def hero_html():
             'PHMSA Incident Extractor</div>'
             '<div style="font-size:1.02rem;opacity:.93;max-width:44rem;margin-bottom:.9rem">'
             'Paste a free-text pipeline incident narrative and get back a structured record: what failed, '
-            'what was done about it, what resulted, and how severe it was.</div>'
+            'what was done about it, what resulted, why it happened, and how severe it was.</div>'
             f'{pills}</div>')
 
 
@@ -179,10 +190,30 @@ def relation_cards_html(record):
             + "".join(rows) + "</div>")
 
 
+def cause_html(pred, top=3):
+    """The predicted cause as a badge, then the top classes as probability bars."""
+    probs = sorted(pred["probabilities"].items(), key=lambda kv: -kv[1])[:top]
+    rows = []
+    for i, (label, p) in enumerate(probs):
+        p = min(max(float(p), 0.0), 1.0)
+        weight = "700" if i == 0 else "400"
+        rows.append(
+            f'<div style="display:flex;align-items:center;gap:.6rem;margin:.3rem 0;font-weight:{weight}">'
+            f'<span style="width:11rem;font-size:.85rem">{html.escape(label.capitalize())}</span>'
+            f'<span style="flex:1;height:.6rem;background:#e6edf3;border-radius:6px;overflow:hidden">'
+            f'<span style="display:block;height:100%;width:{p * 100:.1f}%;background:{TEAL};border-radius:6px"></span></span>'
+            f'<span style="width:2.8rem;text-align:right;font-size:.85rem">{p:.0%}</span></div>')
+    badge = (f'<div style="display:inline-block;background:{NAVY};color:#fff;padding:.4rem 1.3rem;'
+             'border-radius:999px;font-weight:800;letter-spacing:.04em;font-size:1rem;margin:.2rem 0 .8rem 0">'
+             f'{html.escape(pred["label"].capitalize())}</div>')
+    return badge + "".join(rows)
+
+
 def accuracy_cards_html():
     items = [("Entity tagging", "F1 0.61", "840 held-out spans"),
-             ("Relations", "68% precision", "61 of 90 sampled relations"),
-             ("Severity", "Macro-F1 0.78", "1,921 held-out narratives")]
+             ("Relations", "69% precision", "62 of 90 sampled relations"),
+             ("Severity", "Macro-F1 0.78", "1,921 held-out narratives"),
+             ("Cause", "Macro-F1 0.75", "1,921 held-out narratives")]
     return "".join(
         f'<div style="background:#fff;border:1px solid {BORDER};border-radius:10px;padding:.55rem .8rem;margin-bottom:.5rem">'
         f'<div style="font-size:.72rem;color:#5b6b78;text-transform:uppercase;letter-spacing:.07em">{a}</div>'

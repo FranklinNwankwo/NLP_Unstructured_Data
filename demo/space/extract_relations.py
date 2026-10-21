@@ -275,3 +275,4 @@ if __name__ == "__main__":
             print(f"        expected: {sorted(expected)}")
             print(f"        got:      {sorted(got)}")
     print(f"\n{len(tests) - failures}/{len(tests)} checks passed")
+    raise SystemExit(1 if failures else 0)

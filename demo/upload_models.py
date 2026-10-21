@@ -1,6 +1,7 @@
 """
-Uploads both fine-tuned models to ONE Hugging Face model repo (public), as the
-subfolders ner/ and severity/, plus a model card. Writes demo/model_repo.txt so
+Uploads the three fine-tuned models to ONE Hugging Face model repo (public), as the
+subfolders ner/, severity/ and cause/, plus a model card. Safe to rerun
+after adding a model. Writes demo/model_repo.txt so
 the Space knows where to download from.
 
 Needs a Hugging Face account and a token with write access
@@ -22,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 MODELS = {
     "ner": ROOT / "ner_model/phmsa_ner_model",
     "severity": ROOT / "severity_model/phmsa_severity_model",
+    "cause": ROOT / "cause_model/phmsa_cause_model",
 }
 REPO_NAME = "phmsa-incident-models"
 
@@ -38,7 +40,7 @@ tags:
 
 # PHMSA incident models
 
-Two DistilBERT models fine-tuned on public PHMSA pipeline incident reports (gas distribution,
+Three DistilBERT models fine-tuned on public PHMSA pipeline incident reports (gas distribution,
 gas transmission and gathering, hazardous liquid; 2010 to present). Used by the Space
 `phmsa-incident-extraction`.
 
@@ -46,6 +48,7 @@ gas transmission and gathering, hazardous liquid; 2010 to present). Used by the 
 |---|---|---|
 | `ner/` | token classification, 12 entity types | micro-F1 0.608 on 840 spans (1,050 sentences labelled by one annotator) |
 | `severity/` | narrative classification: minor, moderate, severe, critical | macro-F1 0.777, accuracy 0.956 on 1,921 narratives |
+| `cause/` | narrative classification: PHMSA's 8 apparent-cause categories | macro-F1 0.748, accuracy 0.818 on 1,921 narratives |
 
 ## Limits
 
@@ -53,7 +56,10 @@ gas transmission and gathering, hazardous liquid; 2010 to present). Used by the 
   hospitalization, ignition, explosion), not from the narrative text. About 40% of critical narratives
   never mention a death (rough keyword estimate) and the model detects none of those.
   Severity says nothing about spill size or environmental damage.
-- The entity model does not extract root causes (`CAUSE_FACTOR` scores 0) and is weak on locations and
+- Cause labels are PHMSA's apparent cause as chosen by the operator on the report form, not an independent
+  root-cause investigation. The weakest class is the catch-all "other incident cause" (F1 0.38), and
+  "incorrect operation" is often confused with "equipment failure".
+- The entity model does not extract root-cause spans (`CAUSE_FACTOR` scores 0) and is weak on locations and
   regulatory references. Rare classes per commodity are too small to evaluate.
 - Tested only on PHMSA narratives. Not for operational, safety or regulatory decisions.
 
@@ -61,7 +67,7 @@ gas transmission and gathering, hazardous liquid; 2010 to present). Used by the 
 
 Download the repo with `huggingface_hub.snapshot_download("REPO_ID")`, then load the two subfolders with
 `AutoModelForTokenClassification.from_pretrained(<path>/ner)` and
-`AutoModelForSequenceClassification.from_pretrained(<path>/severity)`.
+`AutoModelForSequenceClassification.from_pretrained(<path>/severity)` (or `<path>/cause`).
 """
 
 missing = [n for n, p in MODELS.items() if not (p / "config.json").exists()]

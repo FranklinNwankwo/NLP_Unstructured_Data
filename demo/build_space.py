@@ -1,5 +1,5 @@
 """
-Assembles demo/space/ into a self-contained, deployable folder: copies the four
+Assembles demo/space/ into a self-contained, deployable folder: copies the five
 code modules next to app.py, writes examples.json from pipeline/sample_output.json,
 and copies demo/model_repo.txt. Safe to run again after any code change.
 """
@@ -17,6 +17,7 @@ COPY = {
     ROOT / "relation_extraction/extract_relations.py": "extract_relations.py",
     ROOT / "ner_model/predict.py": "predict.py",
     ROOT / "severity_model/severity_predict.py": "severity_predict.py",
+    ROOT / "cause_model/cause_predict.py": "cause_predict.py",
 }
 for src, name in COPY.items():
     if not src.exists():

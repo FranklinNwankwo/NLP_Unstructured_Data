@@ -11,6 +11,19 @@
         "critical": 0.0012
       }
     },
+    "cause": {
+      "label": "OTHER OUTSIDE FORCE DAMAGE",
+      "probabilities": {
+        "CORROSION FAILURE": 0.0006,
+        "EQUIPMENT FAILURE": 0.0001,
+        "EXCAVATION DAMAGE": 0.0005,
+        "INCORRECT OPERATION": 0.0004,
+        "MATERIAL FAILURE OF PIPE OR WELD": 0.0006,
+        "NATURAL FORCE DAMAGE": 0.0004,
+        "OTHER INCIDENT CAUSE": 0.0304,
+        "OTHER OUTSIDE FORCE DAMAGE": 0.9669
+      }
+    },
     "entities": [
       {
         "text": "3/1/2023 AROUND 22:30 LOCAL",
@@ -124,6 +137,19 @@
         "moderate": 0.0007,
         "severe": 0.0002,
         "critical": 0.0001
+      }
+    },
+    "cause": {
+      "label": "CORROSION FAILURE",
+      "probabilities": {
+        "CORROSION FAILURE": 0.9983,
+        "EQUIPMENT FAILURE": 0.0001,
+        "EXCAVATION DAMAGE": 0.0001,
+        "INCORRECT OPERATION": 0.0002,
+        "MATERIAL FAILURE OF PIPE OR WELD": 0.0007,
+        "NATURAL FORCE DAMAGE": 0.0002,
+        "OTHER INCIDENT CAUSE": 0.0002,
+        "OTHER OUTSIDE FORCE DAMAGE": 0.0002
       }
     },
     "entities": [
@@ -604,6 +630,19 @@
         "moderate": 0.0006,
         "severe": 0.0002,
         "critical": 0.0001
+      }
+    },
+    "cause": {
+      "label": "CORROSION FAILURE",
+      "probabilities": {
+        "CORROSION FAILURE": 0.9792,
+        "EQUIPMENT FAILURE": 0.0158,
+        "EXCAVATION DAMAGE": 0.0002,
+        "INCORRECT OPERATION": 0.0007,
+        "MATERIAL FAILURE OF PIPE OR WELD": 0.0005,
+        "NATURAL FORCE DAMAGE": 0.0014,
+        "OTHER INCIDENT CAUSE": 0.0016,
+        "OTHER OUTSIDE FORCE DAMAGE": 0.0006
       }
     },
     "entities": [
