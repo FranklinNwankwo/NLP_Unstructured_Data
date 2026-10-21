@@ -25,7 +25,7 @@ This is the full engineering record: every design decision, every iteration, wha
 9. [Phase 3: Evaluation harness and baselines](#9-phase-3-evaluation-harness-and-baselines)
 10. [Phase 4: Transformer NER and the CAUSE_FACTOR investigation](#10-phase-4-transformer-ner-and-the-cause_factor-investigation)
 11. [Phase 5: Relation extraction](#11-phase-5-relation-extraction)
-12. [Phase 6: Severity classification](#12-phase-6-severity-classification)
+12. [Phase 6: Severity and cause classification](#12-phase-6-severity-and-cause-classification)
 13. [Phases 7 and 8: Pipeline integration and deployment](#13-phases-7-and-8-pipeline-integration-and-deployment)
 14. [RAG evaluation](#14-rag-evaluation)
 15. [Limitations and threats to validity](#15-limitations-and-threats-to-validity)
@@ -51,8 +51,8 @@ All numbers are on held-out data that no model or rule was tuned on, unless stat
 What works well, what does not:
 
 - **Reliable:** quantities (F1 0.85), materials (0.71), dates (0.70), equipment (0.67). Severity on narratives that explicitly state a death (16 of 16 critical test narratives with a death word were detected).
-- **Weak:** failure modes (0.45), locations (0.39), regulatory references (0.08). Relation type `REMEDIATED_BY` (6 of 15 correct).
-- **Does not work:** root causes (`CAUSE_FACTOR`) are **not extracted** (F1 0.00 in all three trained models and 0.11 for a prompted LLM, 14 test spans). Severity cannot detect a death or injury that the narrative never mentions (0 of 11 such critical test narratives).
+- **Weak:** failure modes (0.45), locations (0.39), regulatory references (0.08). Relation type `REMEDIATED_BY` (6 of 15 correct). The catch-all cause "other incident cause" (F1 0.38).
+- **Does not work:** root-cause spans (`CAUSE_FACTOR`) are **not extracted** (F1 0.00 in all three trained models and 0.11 for a prompted LLM, 14 test spans); the cause is predicted per report instead (section 12.8). Severity cannot detect a death or injury that the narrative never mentions (0 of 11 such critical test narratives).
 - **Not measurable at this data size:** per-commodity results on rare classes (for example 2 critical and 3 severe hazardous-liquid test narratives).
 
 The four entity models, scored identically on the same corrected test labels:
@@ -131,6 +131,8 @@ flowchart LR
   J --> K["Pipeline"]
   I --> K
   K --> L["Streamlit app"]
+  A --> P["Cause labels<br/>from PHMSA CAUSE field"]
+  P --> Q["DistilBERT cause<br/>Colab, not yet in the pipeline"]
 ```
 
 ### 3.2 What runs when you submit a narrative
@@ -185,13 +187,15 @@ ner_model/                     Phase 4: Colab export script, local inference (pr
                                CAUSE_FACTOR diagnosis
 relation_extraction/           Phase 5: rule-based relation extractor, precision-check tooling
 severity_model/                Phase 6: dataset export, TF-IDF baseline, keyword diagnostic, local inference
+cause_model/                   Phase 6: cause dataset export, TF-IDF baseline, local inference (section 12.8)
 pipeline/                      Phase 7: IncidentExtractor (end-to-end), CLI runner, offline tests
 demo/                          Phase 8: Streamlit app (demo/space), model upload, S3 archive, offline tests
 rag/                           RAG layer: index builder, query engine, config, cached example answers
 docs/                          this engineering log and the demo screenshots
 eval/                          RAG evaluation: 18 questions, scorer, saved results
 notebooks/                     Colab training: Training Runs 2.ipynb (NER, Phase 4), Training Runs.ipynb    
-                               (severity, Phase 6), ner_model_comparison.ipynb (DistilBERT vs BERT-base, section 10.8)
+                               (severity, Phase 6), ner_model_comparison.ipynb (DistilBERT vs BERT-base, section 10.8),
+                               Cause Classifier.ipynb (cause, section 12.8)
 ```
 
 ---
@@ -569,7 +573,7 @@ A first pass judged from span text alone (78 decisions) was replaced by a second
 
 So the problem is not span boundaries, and not generalization: the model **never fit the type, even on the sentences it was trained on**. Reading the spans explains why. The remaining `CAUSE_FACTOR` spans are mostly verbs and events whose words are labeled as other types elsewhere: "STRUCK" alone or inside a span 6 times in train, plus "HIT", "IMPACTED", "STRIKE", "CRASH" and "COLLISION"; weather ("LIGHTNING", "STORM", "FREEZING RAIN"); and human errors written as clauses ("NOT PROPERLY MARKED", "FAILED TO POT-HOLE", "FAILURE TO FOLLOW … PROCEDURES"). Whether "STRUCK" is a cause depends on its role in the sentence, not on the word, and 53 training spans cannot outweigh hundreds of `CONSEQUENCE` and `FAILURE_MODE` spans that use the same words. A few spans the relabel kept also look like outcomes or mechanisms rather than causes ("FIRE", "SPARK", "DISCHARGED"), so some inconsistency remains.
 
-**Conclusion.** The root cause is the task definition, not the model size or the span edges: "why it happened" is a role a phrase plays, and flat span tagging with about 50 examples does not capture it. A better fit is narrative-level cause classification, using PHMSA's structured `CAUSE` field (8 categories, filled for every report) as free labels (section 18).
+**Conclusion.** The root cause is the task definition, not the model size or the span edges: "why it happened" is a role a phrase plays, and flat span tagging with about 50 examples does not capture it. A better fit is narrative-level cause classification, using PHMSA's structured `CAUSE` field (8 categories, filled for every report) as free labels. Built in section 12.8: macro-F1 0.748 over the 8 categories.
 
 **Consequences downstream.** `CAUSE_FACTOR` is documented as **not extracted**. The two relations that need it (`CAUSED_BY` from a failure mode to a cause factor, and `INVOLVES_PARTY`) never fire and are marked low-confidence; a cue-word `CAUSED_BY` between a consequence and a failure mode was added to give the pipeline some "why" without it (section 11).
 
@@ -721,7 +725,7 @@ Closest calls (each flip moves the overall figure by about one point). Marked co
 
 ---
 
-## 12. Phase 6: Severity classification
+## 12. Phase 6: Severity and cause classification
 
 ### 12.1 The label, and the decision to keep it (decision "A")
 
@@ -820,6 +824,40 @@ So the transformer found **every** critical narrative that states a death and no
 ### 12.7 Local reproduction
 
 `severity_model/severity_predict.py` mirrors the Colab encoding (head + tail, `[CLS]`/`[SEP]`). Re-scoring all 1,921 test narratives locally took 493 seconds (about 0.26 s per narrative on CPU) and reproduced Colab's confusion matrix cell for cell (macro-F1 0.777, accuracy 0.956, correct per class 1,616 / 174 / 31 / 16).
+
+### 12.8 Cause classification: why did it happen? (`cause_model/`)
+
+Span-level root causes (`CAUSE_FACTOR`) failed even on the training sentences (section 10.4). PHMSA's structured apparent-cause field (`CAUSE`, Part G of the report form) offers a different formulation: one cause per report, already filled in for every report, so no annotation is needed. Gas distribution words two categories differently; they are mapped onto the other forms' wording with the same aliases the RAG layer uses.
+
+**What the label is.** `CAUSE` is the operator's own judgment of the apparent cause, chosen on the form by the same operator who wrote the narrative. It is not an independent root-cause investigation, and many narratives state the cause in plain words. The model learns to read the cause the operator describes.
+
+**Data and protocol** (`cause_model/export_for_colab.py`, `notebooks/Cause Classifier.ipynb`). The split is identical to the severity split (12.2), confirmed narrative by narrative, so the demo's example narratives are unseen by both document classifiers. All 9,603 narratives have a cause (train 6,721, dev 961, test 1,921). The model and training settings are exactly those of the severity model (12.4): DistilBERT, head + tail truncation, square-root class weights, selection on dev macro-F1, one run (seed 42), test scored once.
+
+| Class (test support) | TF-IDF + logistic regression F1 | DistilBERT precision / recall / F1 |
+|---|---|---|
+| Excavation damage (203) | 0.906 | 0.930 / 0.916 / **0.923** |
+| Corrosion failure (372) | 0.859 | 0.894 / 0.887 / **0.891** |
+| Equipment failure (673) | 0.823 | 0.850 / 0.865 / **0.857** |
+| Other outside force damage (134) | 0.699 | 0.789 / 0.724 / **0.755** |
+| Material failure of pipe or weld (138) | 0.735 | 0.665 / 0.833 / **0.740** |
+| Incorrect operation (235) | 0.713 | 0.791 / 0.694 / **0.739** |
+| Natural force damage (104) | 0.489 | 0.658 / 0.740 / **0.697** |
+| Other incident cause (62) | **0.424** | 0.438 / 0.339 / 0.382 |
+| **Macro-F1 / accuracy** | **0.706 / 0.785** | **0.748 / 0.818** |
+
+Always predicting the largest class ("equipment failure") scores accuracy 0.350 and macro-F1 0.065. The TF-IDF regularization strength (C = 10) was chosen on dev. By commodity (DistilBERT macro-F1, TF-IDF in brackets): gas distribution 0.701 (0.633), gas transmission and gathering 0.685 (0.642), hazardous liquid 0.715 (0.647).
+
+**Reading it.**
+
+- **The gain over TF-IDF (+0.042 macro-F1) is much smaller than for severity (+0.131).** Causes are usually named in ordinary words ("excavator", "corrosion", "lightning"), which a bag of words already captures; severity depended on reading whether a death or injury was actually stated.
+- **The biggest gain is `natural force damage`:** recall rose from 0.41 to 0.74. TF-IDF sent 35 of its 104 test narratives to equipment failure; DistilBERT sent 13.
+- **The main confusion is human error vs equipment:** 50 of 235 `incorrect operation` narratives (21%) were predicted `equipment failure`, and 32 equipment failures went the other way. These narratives often describe both an action and the equipment that then failed, so the boundary is blurred in the text itself.
+- **`Other incident cause` is the weakest class (0.38) and the only one where TF-IDF is better.** It is a catch-all, and its errors spread over every other class.
+- This is a single run. The NER seed spread (section 10.8) was about 0.01, so the 0.042 gain is probably real, but it was not tested across seeds.
+
+**Local reproduction.** `cause_model/check_cause_local.py` re-scored all 1,921 test narratives on a laptop CPU in 722 seconds (about 0.38 s per narrative) and reproduced the Colab classification report exactly (macro-F1 0.748, accuracy 0.818). The inference code reuses the severity encoding (`cause_model/cause_predict.py`).
+
+**Status.** The cause model is trained and evaluated but **not yet part of the pipeline or the demo**. A finer sub-cause level (for example natural force damage, frost heave) is supported by `export_for_colab.py --level detail` and has not been run.
 
 ---
 
@@ -925,7 +963,7 @@ that does not exist; after tightening the prompt, the only error in 18 answers w
 
 **Model behavior**
 
-11. **Root causes are not extracted** (`CAUSE_FACTOR` F1 0.00). Two relations depend on it and never fire.
+11. **Root-cause spans are not extracted** (`CAUSE_FACTOR` F1 0.00). Two relations depend on it and never fire. The report-level cause classifier (12.8) predicts PHMSA's 8 apparent-cause categories, which reflect the operator's own judgment, and is not yet part of the pipeline or the demo.
 12. **Severity labels are flag-derived.** About 38% of critical narratives never mention a death, and the model detects none of those. Severity says nothing about spill size or environmental damage, and 97% of liquid reports are "minor".
 13. **Entity errors propagate into relations**, and relation rules are per sentence only.
 14. **Domain.** Trained and tested only on PHMSA narratives (short, upper-case, English). No evidence about other text. Both models are uncased.
@@ -1016,6 +1054,8 @@ Every non-trivial decision, the alternatives I considered, and the reason or evi
 | 40 | Square-root inverse-frequency class weights | none; full inverse frequency | Corrects an 85% majority class without unstable weights (12.4) |
 | 41 | TF-IDF baseline and always-"minor" | transformer only | Shows what the transformer adds (12.3) |
 | 42 | Measure what the text states before tuning | tune hyperparameters | 38% of critical narratives never state a death, so tuning cannot fix them (12.6) |
+| 42a | Predict the cause per narrative from PHMSA's `CAUSE` field | annotate more `CAUSE_FACTOR` spans | Spans failed even on training data (10.4); the field labels all 9,603 narratives for free (12.8) |
+| 42b | Reuse the severity split and training settings for the cause model | a new split, a tuned configuration | Demo narratives stay unseen by both models, and the two document classifiers are directly comparable (12.8) |
 
 ### Pipeline, deployment and honesty
 
@@ -1071,7 +1111,7 @@ Listed because they show how problems were caught, and because several change ho
 **Highest-value next steps**
 
 1. **A second annotator** on a subset to measure agreement, and an independent human re-check of the relation judgments and the `CAUSE_FACTOR` relabel.
-2. **Root causes as a different task.** Span tagging failed even on the training data (section 10.4). Train a narrative-level classifier on PHMSA's structured `CAUSE` field instead (8 categories, a label for every report), and keep span-level causes for the cue-word relations.
+2. **Put the cause model into the pipeline and the demo** (section 12.8), and try the sub-cause level (`python cause_model/export_for_colab.py --level detail`, for example natural force damage, frost heave).
 3. **Gold relations on a small set** so relation recall can be measured, and the two stoplist/blocker fixes measured on a fresh sample.
 4. **Verb-based and cross-sentence relations** (most cause and effect is in verbs such as "struck").
 5. **Test the hospitalization hypothesis** for `severe`, ideally with a spill-size or environmental tier for liquids (decision B).
@@ -1108,8 +1148,9 @@ Listed because they show how problems were caught, and because several change ho
 7. NER: `python ner_model/export_for_colab.py`; fine-tune in Colab with the settings in section 10.2; place the model in `ner_model/phmsa_ner_model`; `python ner_model/check_local_model.py`; optional model-size comparison: run `notebooks/ner_model_comparison.ipynb` in Colab; optional `python ner_model/cause_factor_diagnosis.py` (add `--split train` for the training sentences).
 8. Relations: `python relation_extraction/run_relations.py`; precision sampling with `python relation_extraction/precision_sheet.py`, judgments, then `python relation_extraction/precision_report.py`.
 9. Severity: `python severity_model/export_for_colab.py`; `python severity_model/baseline_tfidf.py`; `python severity_model/keyword_ceiling.py`; fine-tune in Colab with the settings in section 12.4; place the model in `severity_model/phmsa_severity_model`; `python severity_model/check_severity_local.py`.
-10. `python pipeline/run_pipeline.py`.
-11. Demo: `python demo/upload_models.py`, `python demo/build_space.py`, then deploy `demo/space/app.py` from this repository on Streamlit Community Cloud.
+10. Cause: `python cause_model/export_for_colab.py`; `python cause_model/baseline_tfidf.py`; run `notebooks/Cause Classifier.ipynb` in Colab; unzip the model to `cause_model/phmsa_cause_model`; `python cause_model/check_cause_local.py`.
+11. `python pipeline/run_pipeline.py`.
+12. Demo: `python demo/upload_models.py`, `python demo/build_space.py`, then deploy `demo/space/app.py` from this repository on Streamlit Community Cloud.
 
 
 ---
