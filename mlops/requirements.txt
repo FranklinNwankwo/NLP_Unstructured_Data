@@ -1,0 +1,10 @@
+# MLOps jobs (regression test, batch inference, drift report). Install CPU torch first:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   pip install vcs-versioning    (seqeval's build needs it with recent setuptools)
+transformers>=4.46
+huggingface_hub>=0.26
+spacy>=3.7
+pandas>=2.2
+pyarrow
+requests
+seqeval>=1.2.2

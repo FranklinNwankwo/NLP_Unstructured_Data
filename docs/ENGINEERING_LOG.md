@@ -34,6 +34,7 @@ This is the full engineering record: every design decision, every iteration, wha
 18. [Known gaps and future work](#18-known-gaps-and-future-work)
 19. [Testing and reproduction](#19-testing-and-reproduction)
 20. [Data source and notes](#20-data-source-and-notes)
+21. [MLOps: pinned models, regression tests, monitoring and serving](#21-mlops-pinned-models-regression-tests-monitoring-and-serving)
 
 ---
 
@@ -196,7 +197,12 @@ pipeline/                      Phase 7: IncidentExtractor (end-to-end), CLI runn
 demo/                          Phase 8: Streamlit app (demo/space), model upload, S3 archive, offline tests
 rag/                           RAG layer: index builder, query engine, config, cached example answers
 docs/                          this engineering log and the demo screenshots
-eval/                          RAG evaluation: 18 questions, scorer, saved results
+eval/                          RAG evaluation: 18 questions, scorer, saved results; frozen/ holds the NER and
+                               severity/cause test sets used by the model regression test (section 21)
+mlops/                         model manifest (pinned revision, expected scores), regression test, batch
+                               inference and drift report, reference profile, offline tests (section 21)
+serving/                       FastAPI service, Dockerfile, API tests (section 21.4)
+.github/workflows/             tests (offline suites), model-regression, batch-monitor, docker
 notebooks/                     Colab training: Training Runs 2.ipynb (NER, Phase 4), Training Runs.ipynb    
                                (severity, Phase 6), ner_model_comparison.ipynb (DistilBERT vs BERT-base, section 10.8),
                                Cause Classifier.ipynb (cause, section 12.8)
@@ -213,11 +219,12 @@ notebooks/                     Colab training: Training Runs 2.ipynb (NER, Phase
 **Run the extractor locally.**
 
 ```python
-# 1. download the two models from the Hugging Face Hub
+# 1. download the three models from the Hugging Face Hub
 from huggingface_hub import snapshot_download
 path = snapshot_download("Chinonso11/phmsa-incident-models")
 # 2. copy <path>/ner      -> ner_model/phmsa_ner_model
 #    copy <path>/severity -> severity_model/phmsa_severity_model
+#    copy <path>/cause    -> cause_model/phmsa_cause_model
 ```
 
 ```
@@ -231,9 +238,13 @@ streamlit run demo/space/app.py                      # local copy of the web app
 
 ```
 python relation_extraction/extract_relations.py      # relation rule checks
-python pipeline/test_incident_extractor.py           # 20 pipeline checks with fake models
-python demo/test_demo.py                             # 23 demo checks, incl. a headless Streamlit run
+python pipeline/test_incident_extractor.py           # 25 pipeline checks with fake models
+python demo/test_demo.py                             # 32 demo checks, incl. a headless Streamlit run
+python mlops/test_mlops.py                           # drift statistics, PHMSA parsing, manifest consistency
+python serving/test_api.py                           # 19 API checks with fake models
 ```
+
+**Serve it as an API:** `uvicorn serving.api:app --port 8000` from the repository root, or `docker build -f serving/Dockerfile -t phmsa-api .` then `docker run -p 8000:8000 phmsa-api` (section 21.4).
 
 The exact order of scripts used to produce every artifact is listed in [How to reproduce](#reproduction-order).
 
@@ -979,6 +990,7 @@ that does not exist; after tightening the prompt, the only error in 18 answers w
 
 16. Free hosting: the app hibernates when idle and memory is limited; the first request after a quiet spell is slow while the models reload.
 17. **Do not paste confidential text.** The app runs on a third-party host, and PHMSA narratives are public records that can include street addresses and individuals' names.
+18. **Monitoring is partial.** Severity and cause are checked against PHMSA's own coded fields on new reports; NER has only proxies (zero-entity share, entity mix). The API has no authentication or rate limiting and is not deployed (21.6).
 
 **This is a portfolio project, not a tool for operational, safety or regulatory decisions.**
 
@@ -1072,6 +1084,11 @@ Every non-trivial decision, the alternatives I considered, and the reason or evi
 | 45 | Streamlit Community Cloud | Hugging Face Space, AWS Lightsail | Spaces needed a paid plan; Lightsail is a recurring cost (13.2) |
 | 46 | Show measured accuracy and limits inside the app | omit | The app should never look more reliable than it is (13.3) |
 | 47 | Reproduce both models locally against Colab's numbers | trust the download | NER 0.608 and severity 0.777 matched exactly (10.6, 12.7) |
+| 47a | Pin every consumer to one Hugging Face commit in a committed manifest | load `main` | A re-upload silently changed the live demo; now a model change is a reviewed one-line commit, and rollback is a revert (21.1) |
+| 47b | Regression test on the real models, frozen and hashed test sets, tolerance 0.005, weekly + on code changes | rely on the fake-model suites | Fake models cannot detect a worse model or a library update that changes tokenization (21.2) |
+| 47c | Measure live accuracy on new reports against PHMSA's own fatality/injury/fire flags and coded cause | input drift only | The training labels arrive with every new report for free, so accuracy can be tracked, not just inputs (21.3) |
+| 47d | PSI with warn 0.10 / alert 0.20; batches under 100 only warn | KS tests; fixed counts | Works for categorical and binned features alike; the usual thresholds; small monthly batches are noisy (21.3) |
+| 47e | FastAPI with lazy background loading, `/health` vs `/ready`, image built and smoke-tested in CI, not pushed | Flask; load before serving; publish to a registry | Typed schemas give 422s and OpenAPI for free; the container is healthy before the 800 MB download; no paid hosting needed to prove it works (21.4) |
 
 ### RAG layer
 
@@ -1122,8 +1139,8 @@ Listed because they show how problems were caught, and because several change ho
 4. **Verb-based and cross-sentence relations** (most cause and effect is in verbs such as "struck").
 5. **Test the hospitalization hypothesis** for `severe`, ideally with a spill-size or environmental tier for liquids (decision B).
 6. **Group the NER split by narrative** and verify no overlap.
-7. **Build and test the Dockerfile**, then deploy it to AWS if a recurring cost is acceptable.
-8. **Calibrate** the severity probabilities, and add a regression test that re-scores both models against the numbers above.
+7. **Deploy the API container** (section 21.4) behind authentication if a recurring hosting cost is acceptable, and publish the image to a registry.
+8. **Calibrate** the severity and cause probabilities (temperature scaling on dev), and add calibration error to the regression test.
 
 ---
 
@@ -1136,12 +1153,21 @@ Listed because they show how problems were caught, and because several change ho
 | Quantity matcher | `weak_supervision/quantity_matcher.py` | 13 pass/fail checks (including the "75, IN" distance bug) |
 | Weak-label pipeline | `weak_supervision/build_pipeline.py` | 14 checks |
 | Relation rules | `relation_extraction/extract_relations.py` (run the file) | inline checks covering type pairs, units, whitelist, preposition and cue rules |
-| Pipeline | `pipeline/test_incident_extractor.py` | 20 checks with fake models |
-| Demo | `demo/test_demo.py` | 23 checks including a headless Streamlit run |
+| Pipeline | `pipeline/test_incident_extractor.py` | 25 checks with fake models |
+| Demo | `demo/test_demo.py` | 32 checks including a headless Streamlit run |
+| MLOps | `mlops/test_mlops.py` | PSI, length bins, flag-derived severity, cause aliases, cp1252 flat files (.txt and .zip), new-report selection, drift alert logic, macro-F1, manifest and frozen-set hashes |
+| API | `serving/test_api.py` | 19 checks: endpoints, validation limits, 503 without models, negation through the API |
+| Model regression | `mlops/regression_test.py` | the real models at the pinned commit re-scored on the frozen test sets; fails on a drop of more than 0.005 (21.2) |
+| Docker | `.github/workflows/docker.yml` | builds the image, waits for `/ready`, runs a real narrative through `/extract` (21.4) |
 | Reproduction checks | `ner_model/check_local_model.py`, `severity_model/check_severity_local.py` | re-score the downloaded models and compare with Colab (NER micro-F1 0.608; severity macro-F1 0.777, confusion matrix identical) |
 | Alignment and QA | `baselines/check_bio_alignment.py`, `weak_supervision/verify_*.py`, `measure_negation*.py` | alignment (0 of 156 flagged), bug fixes, negation rates |
 
-**Continuous integration.** `.github/workflows/tests.yml` runs the three offline suites (relation rules, pipeline, demo) on every push and pull request with GitHub Actions. They use fake models, so CI needs no model downloads or GPU. Each suite exits with an error code when any check fails, so a failure turns the run red.
+**Continuous integration.** Four GitHub Actions workflows:
+
+- `tests.yml`: the five offline suites (relation rules, pipeline, demo, MLOps, API) on every push and pull request. Fake models, so no downloads or GPU. Each suite exits with an error code when any check fails.
+- `model-regression.yml`: the real models re-scored on the frozen test sets, weekly and on changes to inference code (21.2).
+- `batch-monitor.yml`: monthly batch inference on new PHMSA reports and a drift report (21.3).
+- `docker.yml`: builds the API image and runs a real request through it (21.4).
 
 ### Reproduction order
 
@@ -1157,6 +1183,7 @@ Listed because they show how problems were caught, and because several change ho
 10. Cause: `python cause_model/export_for_colab.py`; `python cause_model/baseline_tfidf.py`; run `notebooks/Cause Classifier.ipynb` in Colab; unzip the model to `cause_model/phmsa_cause_model`; `python cause_model/check_cause_local.py`.
 11. `python pipeline/run_pipeline.py`.
 12. Demo: `python demo/upload_models.py`, `python demo/build_space.py`, then deploy `demo/space/app.py` from this repository on Streamlit Community Cloud.
+13. MLOps: `python mlops/freeze_eval_sets.py`, `python mlops/pin_models.py`, `python mlops/build_reference.py`, `python demo/build_space.py`, commit (section 21.5).
 
 
 ---
@@ -1167,3 +1194,102 @@ Listed because they show how problems were caught, and because several change ho
 - **Narratives are not anonymized.** They can contain street addresses, company names and individuals' names. Do not paste confidential text into the demo.
 - **Models:** `Chinonso11/phmsa-incident-models` on the Hugging Face Hub (fine-tuned from `distilbert-base-uncased`).
 - **Status:** a portfolio project. Not validated for operational, safety or regulatory use.
+
+---
+
+## 21. MLOps: pinned models, regression tests, monitoring and serving
+
+The models were trained once in Colab. This layer keeps them honest after that: every consumer loads the same weights, CI notices if a score drops, a monthly job watches new PHMSA reports for drift, and the pipeline is available as an API in a container.
+
+```mermaid
+flowchart LR
+  HF["Hugging Face model repo<br/>pinned commit"] --> M["mlops/model_manifest.json<br/>revision, expected scores, data hashes"]
+  M --> APP["Streamlit demo"]
+  M --> API["FastAPI service<br/>Docker"]
+  M --> REG["Regression test<br/>weekly + on model-code changes"]
+  M --> BAT["Batch job<br/>monthly"]
+  FZ["eval/frozen/<br/>156 sentences, 1,921 narratives"] --> REG
+  FZ --> REF["reference_profile.json"]
+  PH["PHMSA flat files<br/>downloaded fresh"] --> BAT
+  REF --> BAT
+  BAT --> DR["Drift report<br/>+ disagreements.csv"]
+```
+
+### 21.1 Pinned model versions (`mlops/model_manifest.json`, `mlops/pin_models.py`)
+
+Before this, the app downloaded whatever was on `main` of the model repo, so re-uploading a model changed the live demo with no record. The manifest now holds:
+
+- the model repo and the **exact commit** every consumer loads (`snapshot_download(revision=...)`)
+- the score each model reached when it was trained (NER micro-F1 0.608; severity macro-F1 0.777 and accuracy 0.956; cause macro-F1 0.748 and accuracy 0.818) and a tolerance of 0.005
+- the split method, the sha256 of the frozen test sets and of the source parquet, and the split sizes
+
+`python mlops/pin_models.py` reads the repo's current commit, checks that `ner/`, `severity/` and `cause/` all exist at that commit, and writes it to the manifest and to `demo/model_revision.txt`; `build_space.py` copies that file next to `app.py`. Changing the deployed models is therefore a reviewed commit, and rolling back is reverting one line.
+
+### 21.2 Model regression tests (`mlops/regression_test.py`, `.github/workflows/model-regression.yml`)
+
+The offline suites (section 19) use fake models, so they cannot notice a worse model. The regression test loads the **real** models at the pinned commit and re-scores them:
+
+- **Frozen test sets.** `mlops/freeze_eval_sets.py` writes the 156 NER test sentences and the 1,921 severity/cause test narratives to `eval/frozen/` (committed, a few MB of public text), so CI does not need the git-ignored `data/processed/`. Their hashes are stored in the manifest and checked first, so the test set cannot drift silently either.
+- **Same scoring as training.** NER uses `seqeval` through the shared `spans_to_bio` / `resolve_overlaps` (section 9.1); the classifiers use macro-F1 over the classes present plus accuracy, as in Colab.
+- **Gate.** Any score more than 0.005 below its recorded value fails the job. The table goes to the GitHub job summary and `mlops/results/regression_latest.json`.
+- **When it runs.** Weekly (catches a `transformers` or `torch` release that changes tokenization or numerics), on any push touching inference code, `bio_utils.py`, the frozen sets or the manifest, and on demand. About 20 to 30 minutes on a CPU runner; model weights are cached per pinned revision.
+- `--limit N` runs a smoke version that reports scores without judging them.
+
+Verified locally with randomly initialised tiny models: they fail all five checks; with the expected scores set to what those models achieve, the run passes; appending one row to the frozen file fails on the hash before any model loads.
+
+### 21.3 Batch inference and drift monitoring (`mlops/batch_inference.py`, `.github/workflows/batch-monitor.yml`)
+
+Once a month the job downloads PHMSA's three current flat files, keeps reports that are **not in the training snapshot** (`mlops/seen_reports.txt`, every `commodity|REPORT_NUMBER` in the training data), runs the full pipeline on them, and compares the output with a reference profile built from the frozen test narratives (`mlops/build_reference.py`).
+
+| Signal | What it catches | Rule |
+|---|---|---|
+| Narrative length distribution (PSI) | a form change, a new writing template, truncated narratives | warn 0.10, alert 0.20 |
+| Share of narratives with zero entities | the NER model going blind on a new style | alert above twice the reference (and at least +5 points) |
+| Entity-type mix (PSI), entities per narrative | shifts in what the NER model finds | PSI rule; per-narrative count reported |
+| Predicted severity and cause mix (PSI) | prediction drift | PSI rule |
+| **Severity vs PHMSA's fatality / injury / fire / explosion flags** | live accuracy loss | alert on a drop of 5 points or more vs the reference (= test accuracy) |
+| **Cause vs PHMSA's coded cause** | live accuracy loss | same |
+| Mean prediction confidence | silent uncertainty | reported |
+
+The two agreement rates are the key design choice. New reports arrive with PHMSA's own structured fields, which are exactly the labels the classifiers were trained on, so for severity and cause there is **real ground truth on new data at no cost**, and the job measures live accuracy, not just input drift. NER has no such label, so the zero-entity share and entity mix stand in for it.
+
+Batches under 100 narratives only warn, never alert (a month of new reports can be small). The job also writes `disagreements.csv`: confident (≥ 0.8) cause predictions that contradict the coded cause, which are either model errors or coding errors and are worth reading. Outputs go to `mlops/runs/<date>/` (git-ignored) and are uploaded as a workflow artifact kept 90 days; `--fail-on-alert` makes the job fail on an alert.
+
+Verified locally on synthetic flat files (one `.zip`, two `.txt`, cp1252, a gas-distribution cause alias) where the new reports were deliberately longer: the length PSI alerted, the 50-report run only warned, and a run with no new reports wrote a "nothing to score" report.
+
+### 21.4 Serving (`serving/api.py`, `serving/Dockerfile`, `.github/workflows/docker.yml`)
+
+A FastAPI service around the same `IncidentExtractor`:
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /health` | liveness; never touches the models |
+| `GET /ready` | 503 until the models are loaded, then 200 with the loaded revision |
+| `GET /version` | pinned repo and commit, expected scores |
+| `POST /extract` | one narrative (up to 20,000 characters) → entities, relations, negated spans, severity, cause, revision, latency |
+| `POST /extract/batch` | up to 64 narratives |
+
+Inputs and outputs are typed with Pydantic, so bad requests get a 422 and the OpenAPI schema documents the response. Models load in a background thread at start-up, so the container passes its health check before the roughly 800 MB download finishes; `/ready` is what a load balancer should poll. `PHMSA_MODEL_DIR` points at local model folders instead.
+
+The image is `python:3.11-slim` with CPU-only torch and copies only the modules the pipeline imports plus the manifest; `--build-arg BAKE_MODELS=1` bakes the pinned weights into the image for cold-start-free deploys. The `docker` workflow builds the image, starts it, waits for `/ready`, sends a real narrative through `/extract`, asserts entities, severity and cause come back, and checks a bad request gets 422. Nothing is pushed to a registry.
+
+`serving/test_api.py` (19 checks, fake models, part of `tests.yml`) covers the endpoints, validation limits, the 503 path when models are missing, and the negation filter surviving the API layer. I could not run `docker build` in my own environment (no Docker Hub access); the file set the Dockerfile copies was checked by running uvicorn from a directory holding only those files.
+
+### 21.5 Order of operations (run once locally, then commit)
+
+```
+python mlops/freeze_eval_sets.py      # eval/frozen/*.jsonl, mlops/seen_reports.txt, hashes in the manifest
+python mlops/pin_models.py            # exact commit -> manifest + demo/model_revision.txt
+python mlops/regression_test.py --model-dir <folder with ner/ severity/ cause/>   # optional local check
+python mlops/build_reference.py       # mlops/reference_profile.json (pipeline on the test narratives)
+python demo/build_space.py            # copies model_revision.txt into the app
+```
+
+After each model upload: `pin_models.py`, then the regression workflow, then `build_reference.py`, then commit.
+
+### 21.6 What this layer does not do
+
+- **No automatic retraining.** Training needs a GPU (Colab); an alert means a human looks at the report and decides.
+- **NER has no live accuracy signal**; the zero-entity share is a proxy. The agreement rates measure agreement with PHMSA's coding, which itself has errors.
+- **The API has no authentication or rate limiting** and is not deployed anywhere; it is a container that CI proves works.
+- The reference profile comes from 2010 to 2024 test narratives, so a slow, legitimate shift in reporting over the years will show up as drift too. Rebuilding the reference after a review is part of the process.

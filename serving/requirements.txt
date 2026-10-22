@@ -1,0 +1,7 @@
+# Install CPU torch first (the Dockerfile does): pip install torch --index-url https://download.pytorch.org/whl/cpu
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.6
+transformers>=4.46
+huggingface_hub>=0.26
+spacy>=3.7

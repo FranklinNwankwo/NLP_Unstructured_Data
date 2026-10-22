@@ -1,0 +1,46 @@
+name: model-regression
+
+# Re-scores the deployed models (at the revision pinned in mlops/model_manifest.json)
+# on the frozen test sets; fails if any score drops below the recorded one.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * 1"          # Mondays 06:17 UTC: catches upstream library changes
+  push:
+    branches: [main]
+    paths:
+      - "mlops/**"
+      - "eval/frozen/**"
+      - "ner_model/predict.py"
+      - "severity_model/severity_predict.py"
+      - "cause_model/cause_predict.py"
+      - "annotation/bio_utils.py"
+      - ".github/workflows/model-regression.yml"
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install (CPU torch)
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install vcs-versioning
+          pip install -r mlops/requirements.txt
+      - name: Cache model weights for the pinned revision
+        uses: actions/cache@v4
+        with:
+          path: .models
+          key: models-${{ hashFiles('mlops/model_manifest.json') }}
+      - name: Re-score the three models
+        run: python mlops/regression_test.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regression-results
+          path: mlops/results/

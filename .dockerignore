@@ -1,0 +1,14 @@
+# Context for serving/Dockerfile (built from the repo root). The demo Space builds from demo/space/ instead.
+**/__pycache__
+**/*.pyc
+.git
+venv
+label-studio-venv
+data
+notebooks
+rag_index
+**/phmsa_*_model
+**/*.zip
+baselines/spacy_model
+mlops/runs
+.models

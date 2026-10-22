@@ -1,0 +1,2 @@
+# Frozen test sets are hashed in mlops/model_manifest.json: never let git rewrite their line endings
+eval/frozen/*.jsonl -text

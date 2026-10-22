@@ -46,3 +46,11 @@ if repo_file.exists():
     print(f"copied model repo id: {repo_file.read_text().strip()}")
 else:
     print("WARNING: demo/model_repo.txt not found. Run demo\\upload_models.py before deploying.")
+
+rev_file = ROOT / "demo/model_revision.txt"
+if rev_file.exists():
+    shutil.copy2(rev_file, SPACE / "model_revision.txt")
+    print(f"copied pinned model revision: {rev_file.read_text().strip()[:12]}")
+else:
+    print("NOTE: demo/model_revision.txt not found, so the Space loads the latest models on main. "
+          "Run mlops\\pin_models.py to pin them.")

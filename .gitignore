@@ -15,3 +15,9 @@ baselines/spacy_model/
 rag_index/
 .streamlit/secrets.toml
 data/processed/llm_cache/
+cause_model/phmsa_cause_model/
+cause_model/*.zip
+mlops/runs/
+mlops/results/
+mlops/_test_tmp/
+.models/

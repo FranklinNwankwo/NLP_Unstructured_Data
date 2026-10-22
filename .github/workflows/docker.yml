@@ -1,0 +1,78 @@
+name: docker
+
+# Builds the API image, starts it, waits for the pinned models to load, and sends a real
+# narrative through /extract. Nothing is pushed to a registry.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "serving/**"
+      - "pipeline/incident_extractor.py"
+      - "relation_extraction/extract_relations.py"
+      - "ner_model/predict.py"
+      - "severity_model/severity_predict.py"
+      - "cause_model/cause_predict.py"
+      - "mlops/common.py"
+      - "mlops/model_manifest.json"
+      - ".dockerignore"
+      - ".github/workflows/docker.yml"
+  pull_request:
+    paths:
+      - "serving/**"
+      - "mlops/model_manifest.json"
+
+jobs:
+  build-and-smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: serving/Dockerfile
+          tags: phmsa-api:ci
+          load: true
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Image size
+        run: docker image ls phmsa-api:ci
+      - name: Start the container
+        run: docker run -d --name api -p 8000:8000 phmsa-api:ci
+      - name: Liveness
+        run: |
+          for i in $(seq 1 30); do curl -sf localhost:8000/health && exit 0; sleep 2; done
+          docker logs api; exit 1
+      - name: Readiness (models download at the pinned revision)
+        run: |
+          for i in $(seq 1 120); do
+            if curl -sf localhost:8000/ready; then echo; exit 0; fi
+            sleep 5
+          done
+          curl -s localhost:8000/ready; docker logs api; exit 1
+      - name: Extract a narrative end to end
+        run: |
+          curl -sf localhost:8000/version | python3 -m json.tool
+          curl -sf -X POST localhost:8000/extract -H "content-type: application/json" \
+            -d '{"narrative": "A THIRD-PARTY CONTRACTOR STRUCK A 2-INCH STEEL SERVICE LINE WHILE EXCAVATING. GAS IGNITED AND THE FIRE DAMAGED ONE HOUSE. THE OPERATOR SQUEEZED OFF THE LINE AND REPLACED THE DAMAGED SECTION.", "commodity_type": "gas_distribution"}' \
+            > out.json
+          python3 - <<'PY'
+          import json
+          d = json.load(open("out.json"))
+          print(json.dumps({k: d[k] for k in ("severity", "cause", "model_revision", "latency_ms")}, indent=2))
+          print("entities:", [(e["label"], e["text"]) for e in d["entities"]])
+          assert d["entities"], "no entities"
+          assert d["severity"]["label"] in {"minor", "moderate", "severe", "critical"}
+          assert d["cause"] is not None, "cause model not loaded"
+          PY
+      - name: Bad input is rejected
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" -X POST localhost:8000/extract -H "content-type: application/json" -d '{"narrative": ""}')
+          test "$code" = "422"
+      - name: Container logs
+        if: always()
+        run: docker logs api 2>&1 | tail -50

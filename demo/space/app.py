@@ -27,7 +27,10 @@ def load_extractor():
     repo = repo_file.read_text().strip() if repo_file.exists() else None
     if not (ner_dir and sev_dir):
         from huggingface_hub import snapshot_download
-        root = Path(snapshot_download(repo_id=repo, allow_patterns=["ner/*", "severity/*", "cause/*"]))
+        rev_file = HERE / "model_revision.txt"       # pinned commit, written by mlops/pin_models.py
+        revision = rev_file.read_text().strip() if rev_file.exists() else None
+        root = Path(snapshot_download(repo_id=repo, revision=revision,
+                                      allow_patterns=["ner/*", "severity/*", "cause/*"]))
         ner_dir, sev_dir = root / "ner", root / "severity"
         cause_dir = cause_dir or root / "cause"
     from incident_extractor import IncidentExtractor

@@ -1,0 +1,66 @@
+{
+  "model_repo": "Chinonso11/phmsa-incident-models",
+  "revision": "ee547f938079b97483ba3540632dff1956b944f3",
+  "pinned_at": "2026-10-22T09:43:05Z",
+  "models": {
+    "ner": {
+      "subfolder": "ner",
+      "base": "distilbert-base-uncased",
+      "task": "token classification, 12 entity types, BIO",
+      "expected": {
+        "micro_f1": 0.608
+      }
+    },
+    "severity": {
+      "subfolder": "severity",
+      "base": "distilbert-base-uncased",
+      "task": "4-class narrative classification (minor / moderate / severe / critical)",
+      "expected": {
+        "macro_f1": 0.777,
+        "accuracy": 0.956
+      }
+    },
+    "cause": {
+      "subfolder": "cause",
+      "base": "distilbert-base-uncased",
+      "task": "8-class narrative classification (PHMSA apparent cause)",
+      "expected": {
+        "macro_f1": 0.748,
+        "accuracy": 0.818
+      }
+    }
+  },
+  "tolerance": 0.005,
+  "split": {
+    "method": "StratifiedGroupKFold, seed 42; groups commodity|REPORT_NUMBER; strata commodity x severity; 5-word minimum",
+    "note": "cause uses the identical split to severity"
+  },
+  "eval_sets": {
+    "ner_test": {
+      "path": "eval/frozen/ner_test.jsonl",
+      "rows": 156,
+      "sha256": "3b19d40977a59ff6afe19ac3e1cf787ed9ab85890c8ae07c80b9c606e7e6669d"
+    },
+    "docs_test": {
+      "path": "eval/frozen/docs_test.jsonl",
+      "rows": 1921,
+      "rows_with_cause": 1921,
+      "sha256": "54509dcd2b6e1466be1d19caa7c91f2339110fbe617a6224827c9a6f4b06fd59"
+    }
+  },
+  "training_data": {
+    "phmsa_combined_with_severity.parquet": "68713d7a100b006cf51ed5791b7c58664cdbecf71eded3cd181a21a8e58fe9e6",
+    "ner_train.parquet": "de6ab5a0a21ec971a4d5ffea3125fa947af2a8aca001df057ad90c5ca2cc35ed",
+    "severity_split_sizes": {
+      "train": 6721,
+      "dev": 961,
+      "test": 1921
+    },
+    "cause_split_sizes": {
+      "train": 6721,
+      "dev": 961,
+      "test": 1921
+    },
+    "reports_in_snapshot": 9654
+  }
+}

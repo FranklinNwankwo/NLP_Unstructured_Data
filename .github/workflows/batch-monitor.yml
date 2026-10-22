@@ -1,0 +1,50 @@
+name: batch-monitor
+
+# Monthly: download PHMSA's current flat files, run the pinned pipeline on reports the
+# models have never seen, and publish a drift report (job summary + artifact).
+on:
+  workflow_dispatch:
+    inputs:
+      max_reports:
+        description: "Score at most N new reports (0 = all)"
+        default: "0"
+      fail_on_alert:
+        description: "Fail the job if a drift check alerts"
+        type: boolean
+        default: false
+  schedule:
+    - cron: "41 7 3 * *"          # 3rd of each month, 07:41 UTC
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install (CPU torch)
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install vcs-versioning
+          pip install -r mlops/requirements.txt
+      - name: Cache model weights for the pinned revision
+        uses: actions/cache@v4
+        with:
+          path: .models
+          key: models-${{ hashFiles('mlops/model_manifest.json') }}
+      - name: Batch inference and drift report
+        run: |
+          python mlops/batch_inference.py --max "${{ github.event.inputs.max_reports || '0' }}" \
+            ${{ github.event.inputs.fail_on_alert == 'true' && '--fail-on-alert' || '' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: drift-report-${{ github.run_number }}
+          path: |
+            mlops/runs/*/drift_report.*
+            mlops/runs/*/disagreements.csv
+            mlops/runs/*/predictions.jsonl.gz
+          retention-days: 90

@@ -14,10 +14,14 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Install dependencies (no models or GPU needed)
-        run: pip install spacy pandas streamlit
+        run: pip install spacy pandas streamlit fastapi httpx
       - name: Relation rules
         run: python relation_extraction/extract_relations.py
       - name: Pipeline (fake models)
         run: python pipeline/test_incident_extractor.py
       - name: Demo app (fake models, headless Streamlit)
         run: python demo/test_demo.py
+      - name: MLOps (drift statistics, PHMSA parsing, manifest)
+        run: python mlops/test_mlops.py
+      - name: API service (fake models)
+        run: python serving/test_api.py
