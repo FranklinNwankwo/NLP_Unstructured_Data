@@ -15,7 +15,7 @@
   - **Relations:** **69%** precision on 90 hand-reviewed relations (recall not measured)
   - **Severity / cause:** macro-F1 **0.777** / **0.748**, vs 0.646 / 0.706 for TF-IDF + logistic regression
   - **Question answering:** **18/18** filters and counts correct; 18/18 answers with valid citations after a code check
-- **In production terms.** Models pinned to one Hugging Face commit; CI re-scores the real models weekly and fails on any drop; a monthly job runs new PHMSA reports through the pipeline and reports drift, including live accuracy against PHMSA's own coded fields; a FastAPI service in a Docker image tested in CI.
+- **In production terms.** Models pinned to one Hugging Face commit; CI re-scores the real models weekly and fails on any drop; a monthly batch run puts new PHMSA reports through the pipeline and reports drift, including live accuracy against PHMSA's own coded fields; a FastAPI service in a Docker image tested in CI.
 - **What does not work.** Root-cause *spans* are not extracted (F1 0.00), so the cause is predicted per report instead; severity cannot see a death the narrative never mentions.
 - **Try it:** [live demo](https://nlp-on-oil-and-gas-unstructured-data.streamlit.app) (sleeps when idle, so the first load is slow) · [models on Hugging Face](https://huggingface.co/Chinonso11/phmsa-incident-models) · [full engineering log](docs/ENGINEERING_LOG.md)
 - **What I'd do next:**

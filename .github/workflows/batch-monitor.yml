@@ -1,7 +1,9 @@
 name: batch-monitor
 
-# Monthly: download PHMSA's current flat files, run the pinned pipeline on reports the
+# Manual only: download PHMSA's current flat files, run the pinned pipeline on reports the
 # models have never seen, and publish a drift report (job summary + artifact).
+# No schedule: phmsa.dot.gov answers 403 to GitHub-hosted runners, so the monthly run is local:
+#   python mlops/batch_inference.py --source-dir <folder with the three ZIPs> --model-dir local
 on:
   workflow_dispatch:
     inputs:
@@ -12,8 +14,6 @@ on:
         description: "Fail the job if a drift check alerts"
         type: boolean
         default: false
-  schedule:
-    - cron: "41 7 3 * *"          # 3rd of each month, 07:41 UTC
 
 jobs:
   monitor:

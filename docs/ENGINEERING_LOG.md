@@ -1166,7 +1166,7 @@ Listed because they show how problems were caught, and because several change ho
 
 - `tests.yml`: the five offline suites (relation rules, pipeline, demo, MLOps, API) on every push and pull request. Fake models, so no downloads or GPU. Each suite exits with an error code when any check fails.
 - `model-regression.yml`: the real models re-scored on the frozen test sets, weekly and on changes to inference code (21.2).
-- `batch-monitor.yml`: monthly batch inference on new PHMSA reports and a drift report (21.3).
+- `batch-monitor.yml`: batch inference on new PHMSA reports and a drift report, manual trigger only; PHMSA blocks GitHub's runners, so the monthly run is local (21.3).
 - `docker.yml`: builds the API image and runs a real request through it (21.4).
 
 ### Reproduction order
@@ -1199,7 +1199,7 @@ Listed because they show how problems were caught, and because several change ho
 
 ## 21. MLOps: pinned models, regression tests, monitoring and serving
 
-The models were trained once in Colab. This layer keeps them honest after that: every consumer loads the same weights, CI notices if a score drops, a monthly job watches new PHMSA reports for drift, and the pipeline is available as an API in a container.
+The models were trained once in Colab. This layer keeps them honest after that: every consumer loads the same weights, CI notices if a score drops, a monthly batch run (local, because PHMSA blocks GitHub's runners) watches new PHMSA reports for drift, and the pipeline is available as an API in a container.
 
 ```mermaid
 flowchart LR
@@ -1207,7 +1207,7 @@ flowchart LR
   M --> APP["Streamlit demo"]
   M --> API["FastAPI service<br/>Docker"]
   M --> REG["Regression test<br/>weekly + on model-code changes"]
-  M --> BAT["Batch job<br/>monthly"]
+  M --> BAT["Batch job<br/>monthly, run locally"]
   FZ["eval/frozen/<br/>156 sentences, 1,921 narratives"] --> REG
   FZ --> REF["reference_profile.json"]
   PH["PHMSA flat files<br/>downloaded fresh"] --> BAT
@@ -1239,7 +1239,7 @@ Verified locally with randomly initialised tiny models: they fail all five check
 
 ### 21.3 Batch inference and drift monitoring (`mlops/batch_inference.py`, `.github/workflows/batch-monitor.yml`)
 
-Once a month the job downloads PHMSA's three current flat files, keeps reports that are **not in the training snapshot** (`mlops/seen_reports.txt`, every `commodity|REPORT_NUMBER` in the training data), runs the full pipeline on them, and compares the output with a reference profile built from the frozen test narratives (`mlops/build_reference.py`).
+Each month the job downloads PHMSA's three current flat files, keeps reports that are **not in the training snapshot** (`mlops/seen_reports.txt`, every `commodity|REPORT_NUMBER` in the training data), runs the full pipeline on them, and compares the output with a reference profile built from the frozen test narratives (`mlops/build_reference.py`).
 
 | Signal | What it catches | Rule |
 |---|---|---|
@@ -1256,6 +1256,10 @@ The two agreement rates are the key design choice. New reports arrive with PHMSA
 Batches under 100 narratives only warn, never alert (a month of new reports can be small). The job also writes `disagreements.csv`: confident (≥ 0.8) cause predictions that contradict the coded cause, which are either model errors or coding errors and are worth reading. Outputs go to `mlops/runs/<date>/` (git-ignored) and are uploaded as a workflow artifact kept 90 days; `--fail-on-alert` makes the job fail on an alert.
 
 Verified locally on synthetic flat files (one `.zip`, two `.txt`, cp1252, a gas-distribution cause alias) where the new reports were deliberately longer: the length PSI alerted, the 50-report run only warned, and a run with no new reports wrote a "nothing to score" report.
+
+**phmsa.dot.gov blocks GitHub-hosted runners** (HTTP 403 on the ZIP downloads, even with browser headers), so the job does not run on a schedule. The monthly run is local: download the three "January 2010 to present" ZIPs in a browser into one folder, then `python mlops/batch_inference.py --source-dir <folder> --model-dir local`. The workflow stays available for manual runs with `workflow_dispatch`.
+
+**First run (2026-10-22, run locally).** 67 reports filed 2026-08-31 to 2026-10-14, none seen in training. Severity agreed with PHMSA's flags on 95.5% (test: 95.6%). Cause agreed with PHMSA's coded cause on 67.2% (test: 81.8%), with cause-mix PSI 0.333 and length PSI 0.234, all WARN because the batch is under 100 reports. Two explanations I have not separated yet: the batch is 66% hazardous liquid, far more than the test set, and recent reports are often preliminary, with shorter narratives and causes that supplemental reports may revise. Decision: no action until a batch of 100 or more confirms it; 17 confident disagreements are saved for review in `disagreements.csv`.
 
 ### 21.4 Serving (`serving/api.py`, `serving/Dockerfile`, `.github/workflows/docker.yml`)
 
