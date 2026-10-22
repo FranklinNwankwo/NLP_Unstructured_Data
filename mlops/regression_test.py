@@ -43,12 +43,25 @@ def macro_f1_present(y_true, y_pred):
     return (sum(f1s) / len(f1s) if f1s else 0.0), acc
 
 
-def check(results, name, metric, got, expected, tol):
+ECE_TOLERANCE = 0.01
+
+
+def check(results, name, metric, got, expected, tol, higher_is_better=True):
     got = float(got)
-    ok = bool(got >= expected - tol)
+    ok = bool(got >= expected - tol) if higher_is_better else bool(got <= expected + tol)
     results.append({"model": name, "metric": metric, "expected": expected, "got": round(got, 4),
                     "delta": round(got - expected, 4), "pass": ok})
     return ok
+
+
+def expected_calibration_error(preds, gold):
+    """Top-label ECE (15 bins) from predictor output, same definition as mlops/calibrate.py."""
+    import numpy as np
+    from calibrate import reliability
+    labels = list(preds[0]["probabilities"])
+    probs = np.array([[p["probabilities"][l] for l in labels] for p in preds])
+    y = np.array([labels.index(g) for g in gold])
+    return reliability(probs, y)[0]
 
 
 def score_ner(predictor, rows):
@@ -119,7 +132,14 @@ def main():
         ok2 = check(results, name, "accuracy", acc, exp["accuracy"], tol)
         if not (ok1 and ok2):
             failures.append(f"{name} macro-F1 {mf1:.3f} / accuracy {acc:.3f}")
-        print(f"{name:<9} macro-F1 {mf1:.3f}   accuracy {acc:.3f}   ({len(rows)} narratives, {time.time() - t0:.0f}s)")
+        ece_note = ""
+        if "ece" in exp:                     # set by mlops/calibrate.py; lower is better
+            ece = expected_calibration_error(preds, [d[field] for d in rows])
+            if not check(results, name, "ece", ece, exp["ece"], ECE_TOLERANCE, higher_is_better=False):
+                failures.append(f"{name} ECE {ece:.3f}")
+            ece_note = f"   ECE {ece:.3f}"
+        print(f"{name:<9} macro-F1 {mf1:.3f}   accuracy {acc:.3f}{ece_note}   "
+              f"({len(rows)} narratives, {time.time() - t0:.0f}s)")
 
     # 3. report
     smoke = bool(args.limit)
@@ -131,7 +151,7 @@ def main():
         json.dumps(out, indent=2) + "\n", encoding="utf-8")
 
     lines = [f"### Model regression test ({'smoke, not judged' if smoke else 'full'})", "",
-             f"`{m['model_repo']}@{m['revision'][:12]}`, tolerance {tol}", "",
+             f"`{m['model_repo']}@{m['revision'][:12]}`, tolerance {tol} (ECE: +{ECE_TOLERANCE})", "",
              "| Model | Metric | Expected | Got | Δ | |", "|---|---|---|---|---|---|"]
     for r in results:
         mark = "✅" if r["pass"] else ("⚠️" if smoke else "❌")

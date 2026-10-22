@@ -46,7 +46,8 @@ All numbers are on held-out data that no model or rule was tuned on, unless stat
 |---|---|---|---|
 | **Entity extraction** (12 types, per sentence) | DistilBERT token classification | **micro-F1 0.608** (precision 0.575, recall 0.645) on 840 gold spans in 156 sentences | rule-based gazetteers 0.371; spaCy statistical NER 0.553; Gemini Flash-Lite 8-shot 0.564 |
 | **Relations** (6 active types, per sentence) | Rules over the predicted entities | **69% precision** (62 of 90 sampled relations correct, 95% interval 59 to 78%; reviewed by the author) | none (no gold relations, so recall is not measured) |
-| **Severity** (minor / moderate / severe / critical) | DistilBERT over the whole narrative | **macro-F1 0.777**, accuracy 0.956 on 1,921 narratives | TF-IDF + logistic regression 0.646; always-"minor" 0.230 |
+| **Severity** (minor / moderate / severe / critical) | DistilBERT over the whole narrative | **macro-F1 0.777**, accuracy 0.956 on 1,921 narratives; calibration error 0.023 after temperature scaling | TF-IDF + logistic regression 0.646; always-"minor" 0.230 |
+| **Cause** (PHMSA's 8 apparent-cause categories) | DistilBERT over the whole narrative | **macro-F1 0.748**, accuracy 0.818 on 1,921 narratives; calibration error 0.050 after temperature scaling (0.134 before) | TF-IDF + logistic regression 0.706 |
 | **Question answering (RAG)** over all 9,610 narrated incidents | LLM-parsed filters, exact pandas statistics, semantic search inside the filtered set, cited answers | **18/18** filters and counts correct; citations valid **17/18** from the model, **18/18** after the citation check | none (see [section 14](#14-rag-evaluation)) |
 
 What works well, what does not:
@@ -874,6 +875,23 @@ Always predicting the largest class ("equipment failure") scores accuracy 0.350 
 
 **Status.** The cause is part of the pipeline output (`cause` in each record) and is shown in the demo next to severity, with its top three categories (section 13). A finer sub-cause level (for example natural force damage, frost heave) is supported by `export_for_colab.py --level detail` and has not been run.
 
+### 12.9 Calibration: can the probabilities be trusted? (`mlops/calibrate.py`)
+
+Both classifiers show their probabilities in the app and the API, so "90%" has to mean right about 90% of the time. Fine-tuned transformers are usually overconfident (Guo et al., 2017), and these two were trained with class weights, which distort probabilities further. I measured it on the test set and fixed it with **temperature scaling**: one number T per model, fitted on the dev split (961 narratives) by minimising negative log-likelihood, with probabilities = softmax(logits / T). Dividing by a positive constant never changes which class wins, so labels, accuracy and macro-F1 are unchanged by construction.
+
+Test set (1,921 narratives), before → after:
+
+| Model | T | ECE (15 bins) | NLL | Brier | Mean confidence | Accuracy |
+|---|---|---|---|---|---|---|
+| Severity | 1.656 | 0.038 → **0.023** | 0.222 → 0.170 | 0.080 → 0.074 | 0.993 → 0.962 | 0.956 |
+| Cause | 1.927 | 0.134 → **0.050** | 0.865 → 0.631 | 0.316 → 0.280 | 0.952 → 0.826 | 0.818 |
+
+- **Both models were overconfident (T > 1), the cause model much more.** Before scaling, the cause model gave 1,612 test narratives a confidence above 93% (on average 99.3%) and was right on 88.1% of them; the severity model gave 1,885 narratives 99.8% on average and was right on 96.5%.
+- **After scaling, average confidence matches accuracy**: 0.826 against 0.818 for cause, 0.962 against 0.956 for severity. Calibration error fell by 63% (cause) and 39% (severity), and NLL by 27% and 23%.
+- **What it does not fix.** One temperature corrects overall over- or under-confidence, not per-class bias from the class weights, and ECE here is top-label only. 961 dev narratives is enough to fit one parameter, but the rare classes (2 to 30 test narratives) have no reliable per-class calibration estimate.
+
+**Deployment.** `calibrate.py` writes `calibration.json` ({"temperature": T}) next to each model; `SeverityPredictor` (and `CausePredictor`, which subclasses it) applies it when present. The files were uploaded to the model repo and the manifest re-pinned to commit `dffce311f90e`, so the demo, the API and the batch job all show calibrated probabilities. The expected test ECE is in the manifest and the regression test fails if it rises by more than 0.01 (section 21.2), which catches a lost or wrong `calibration.json` as well as a worse model.
+
 ---
 
 ## 13. Phases 7 and 8: Pipeline integration and deployment
@@ -984,7 +1002,7 @@ that does not exist; after tightening the prompt, the only error in 18 answers w
 12. **Severity labels are flag-derived.** About 38% of critical narratives never mention a death, and the model detects none of those. Severity says nothing about spill size or environmental damage, and 97% of liquid reports are "minor".
 13. **Entity errors propagate into relations**, and relation rules are per sentence only.
 14. **Domain.** Trained and tested only on PHMSA narratives (short, upper-case, English). No evidence about other text. Both models are uncased.
-15. **No confidence calibration.** The severity probabilities are softmax outputs, not calibrated.
+15. **Calibration is global, not per class.** Temperature scaling brought calibration error to 0.023 (severity) and 0.050 (cause), but one temperature cannot correct per-class bias, and the rare classes are too small to check (12.9).
 
 **Deployment**
 
@@ -1074,6 +1092,7 @@ Every non-trivial decision, the alternatives I considered, and the reason or evi
 | 42 | Measure what the text states before tuning | tune hyperparameters | 38% of critical narratives never state a death, so tuning cannot fix them (12.6) |
 | 42a | Predict the cause per narrative from PHMSA's `CAUSE` field | annotate more `CAUSE_FACTOR` spans | Spans failed even on training data (10.4); the field labels all 9,603 narratives for free (12.8) |
 | 42b | Reuse the severity split and training settings for the cause model | a new split, a tuned configuration | Demo narratives stay unseen by both models, and the two document classifiers are directly comparable (12.8) |
+| 42c | Temperature scaling fitted on dev, shipped as `calibration.json` beside each model | leave softmax as is; Platt or isotonic per class; retrain with label smoothing | The app shows these probabilities; the cause model said 99% and was right 88%. One parameter cannot overfit 961 dev narratives and cannot change a prediction; ECE 0.134 → 0.050 (12.9) |
 
 ### Pipeline, deployment and honesty
 
@@ -1140,7 +1159,7 @@ Listed because they show how problems were caught, and because several change ho
 5. **Test the hospitalization hypothesis** for `severe`, ideally with a spill-size or environmental tier for liquids (decision B).
 6. **Group the NER split by narrative** and verify no overlap.
 7. **Deploy the API container** (section 21.4) behind authentication if a recurring hosting cost is acceptable, and publish the image to a registry.
-8. **Calibrate** the severity and cause probabilities (temperature scaling on dev), and add calibration error to the regression test.
+8. **Per-class calibration** (vector or matrix scaling, or isotonic per class) once the rare classes have enough data to evaluate it; global temperature scaling is done (12.9).
 
 ---
 
@@ -1231,7 +1250,7 @@ The offline suites (section 19) use fake models, so they cannot notice a worse m
 
 - **Frozen test sets.** `mlops/freeze_eval_sets.py` writes the 156 NER test sentences and the 1,921 severity/cause test narratives to `eval/frozen/` (committed, a few MB of public text), so CI does not need the git-ignored `data/processed/`. Their hashes are stored in the manifest and checked first, so the test set cannot drift silently either.
 - **Same scoring as training.** NER uses `seqeval` through the shared `spans_to_bio` / `resolve_overlaps` (section 9.1); the classifiers use macro-F1 over the classes present plus accuracy, as in Colab.
-- **Gate.** Any score more than 0.005 below its recorded value fails the job. The table goes to the GitHub job summary and `mlops/results/regression_latest.json`.
+- **Gate.** Any score more than 0.005 below its recorded value fails the job, and so does a calibration error (ECE) more than 0.01 above its recorded value (12.9). The table goes to the GitHub job summary and `mlops/results/regression_latest.json`.
 - **When it runs.** Weekly (catches a `transformers` or `torch` release that changes tokenization or numerics), on any push touching inference code, `bio_utils.py`, the frozen sets or the manifest, and on demand. About 20 to 30 minutes on a CPU runner; model weights are cached per pinned revision.
 - `--limit N` runs a smoke version that reports scores without judging them.
 

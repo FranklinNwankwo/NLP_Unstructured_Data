@@ -122,6 +122,27 @@ check("macro-F1 over present classes", abs(f1 - (2 / 3 + 0.8) / 2) < 1e-9 and ac
 f1, _ = macro_f1_present(["a", "a"], ["a", "c"])
 check("classes only predicted (not present) don't count", abs(f1 - 2 / 3) < 1e-9, f1)
 
+# ---- calibration (temperature scaling)
+import numpy as np  # noqa: E402
+
+from calibrate import brier, fit_temperature, nll, reliability, softmax  # noqa: E402
+
+rng = np.random.default_rng(0)
+true_logits = rng.normal(0, 2, size=(4000, 4))
+y = np.array([rng.choice(4, p=row) for row in softmax(true_logits)])
+over = true_logits * 2.5                                      # an overconfident model: logits 2.5x too large
+t = fit_temperature(over, y)
+check("temperature fit recovers the overconfidence factor", abs(t - 2.5) < 0.25, t)
+check("calibrated NLL is lower than raw NLL", nll(over, y, t) < nll(over, y, 1.0))
+ece_raw, _ = reliability(softmax(over), y)
+ece_cal, bins = reliability(softmax(over, t), y)
+check("ECE drops after scaling", ece_cal < ece_raw / 2, (ece_raw, ece_cal))
+check("reliability bins cover every row", sum(b["n"] for b in bins) == len(y))
+check("temperature never changes the argmax", (softmax(over).argmax(1) == softmax(over, t).argmax(1)).all())
+perfect = np.eye(3)[[0, 1, 2, 0]]
+check("Brier is 0 for perfect one-hot predictions", brier(perfect, np.array([0, 1, 2, 0])) == 0)
+check("ECE is 0 for perfect one-hot predictions", reliability(perfect, np.array([0, 1, 2, 0]))[0] == 0)
+
 # ---- manifest consistency (the files CI and the app rely on)
 m = c.load_manifest()
 check("manifest has repo, revision, three models with expected scores",

@@ -1,7 +1,7 @@
 {
   "model_repo": "Chinonso11/phmsa-incident-models",
-  "revision": "ee547f938079b97483ba3540632dff1956b944f3",
-  "pinned_at": "2026-10-22T09:43:05Z",
+  "revision": "dffce311f90e57318a93869382a2200817badd3a",
+  "pinned_at": "2026-10-22T12:52:23Z",
   "models": {
     "ner": {
       "subfolder": "ner",
@@ -17,8 +17,10 @@
       "task": "4-class narrative classification (minor / moderate / severe / critical)",
       "expected": {
         "macro_f1": 0.777,
-        "accuracy": 0.956
-      }
+        "accuracy": 0.956,
+        "ece": 0.0231
+      },
+      "temperature": 1.6564
     },
     "cause": {
       "subfolder": "cause",
@@ -26,8 +28,10 @@
       "task": "8-class narrative classification (PHMSA apparent cause)",
       "expected": {
         "macro_f1": 0.748,
-        "accuracy": 0.818
-      }
+        "accuracy": 0.818,
+        "ece": 0.0501
+      },
+      "temperature": 1.927
     }
   },
   "tolerance": 0.005,

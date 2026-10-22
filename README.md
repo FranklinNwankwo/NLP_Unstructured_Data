@@ -13,7 +13,7 @@
 - **Results on held-out data:**
   - **Entities:** micro-F1 **0.608** (fine-tuned DistilBERT), vs 0.553 spaCy, 0.564 an 8-shot LLM and 0.371 rules
   - **Relations:** **69%** precision on 90 hand-reviewed relations (recall not measured)
-  - **Severity / cause:** macro-F1 **0.777** / **0.748**, vs 0.646 / 0.706 for TF-IDF + logistic regression
+  - **Severity / cause:** macro-F1 **0.777** / **0.748**, vs 0.646 / 0.706 for TF-IDF + logistic regression; probabilities calibrated by temperature scaling (cause calibration error 0.134 → 0.050)
   - **Question answering:** **18/18** filters and counts correct; 18/18 answers with valid citations after a code check
 - **In production terms.** Models pinned to one Hugging Face commit; CI re-scores the real models weekly and fails on any drop; a monthly batch run puts new PHMSA reports through the pipeline and reports drift, including live accuracy against PHMSA's own coded fields; a FastAPI service in a Docker image tested in CI.
 - **What does not work.** Root-cause *spans* are not extracted (F1 0.00), so the cause is predicted per report instead; severity cannot see a death the narrative never mentions.

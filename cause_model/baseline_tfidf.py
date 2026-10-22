@@ -77,3 +77,11 @@ for c in sorted(set(cte)):
     m = cte == c
     print(f"  {c:<28} n={int(m.sum()):<5} macro-F1 {macro_present(yte[m], pred[m]):.3f}   "
           f"accuracy {np.mean(pred[m] == yte[m]):.3f}")
+
+if args.level == "detail":
+    parent = np.array([l.split(" - ")[0] for l in LABELS])
+    pt, pp = parent[yte], parent[pred]
+    present = sorted(set(pt))
+    print(f"\nRolled up to the 8 parent causes: macro-F1 "
+          f"{f1_score(pt, pp, labels=present, average='macro', zero_division=0):.3f}   accuracy {np.mean(pt == pp):.3f}"
+          "   (8-category TF-IDF: 0.706 macro-F1)")

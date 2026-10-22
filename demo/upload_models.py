@@ -47,8 +47,14 @@ gas transmission and gathering, hazardous liquid; 2010 to present). Used by the 
 | Folder | Task | Held-out result |
 |---|---|---|
 | `ner/` | token classification, 12 entity types | micro-F1 0.608 on 840 spans (1,050 sentences labelled by one annotator) |
-| `severity/` | narrative classification: minor, moderate, severe, critical | macro-F1 0.777, accuracy 0.956 on 1,921 narratives |
-| `cause/` | narrative classification: PHMSA's 8 apparent-cause categories | macro-F1 0.748, accuracy 0.818 on 1,921 narratives |
+| `severity/` | narrative classification: minor, moderate, severe, critical | macro-F1 0.777, accuracy 0.956 on 1,921 narratives ; calibration error 0.023 |
+| `cause/` | narrative classification: PHMSA's 8 apparent-cause categories | macro-F1 0.748, accuracy 0.818 on 1,921 narratives ; calibration error 0.050 |
+
+## Calibration
+
+`severity/` and `cause/` each contain `calibration.json` with a temperature T fitted on the dev split
+(T = 1.656 and 1.927). Divide the logits by T before the softmax for calibrated probabilities; labels do not
+change. Uncalibrated, the cause model was overconfident (average confidence 0.95 vs accuracy 0.82).
 
 ## Limits
 
