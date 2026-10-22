@@ -31,7 +31,7 @@
     "severe": 0.01978136387298282,
     "critical": 0.00989068193649141
   },
-  "severity_confidence_mean": 0.9926264966163456,
+  "severity_confidence_mean": 0.9620899010931806,
   "cause_dist": {
     "CORROSION FAILURE": 0.19208745445080688,
     "EQUIPMENT FAILURE": 0.35658511192087455,
@@ -42,7 +42,7 @@
     "OTHER INCIDENT CAUSE": 0.024986985944820406,
     "OTHER OUTSIDE FORCE DAMAGE": 0.06402915148360229
   },
-  "cause_confidence_mean": 0.9519414367516918,
+  "cause_confidence_mean": 0.8258080687142114,
   "severity_agreement": 0.9562727745965642,
   "cause_agreement": 0.8178032274856846,
   "source": "eval/frozen/docs_test.jsonl",
