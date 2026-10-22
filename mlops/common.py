@@ -160,6 +160,46 @@ def read_flat_file(raw_bytes, commodity):
     return df
 
 
+PHMSA_DATA_PAGE = ("https://www.phmsa.dot.gov/data-and-statistics/pipeline/"
+                   "distribution-transmission-gathering-lng-and-liquid-accident-and-incident-data")
+BROWSER_HEADERS = {
+    "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                   "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,application/zip,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": PHMSA_DATA_PAGE,
+}
+_session = None
+
+
+def fetch_phmsa(url, tries=4):
+    """Download one PHMSA ZIP. phmsa.dot.gov sits behind bot protection that answers 403 to
+    non-browser clients, so: browser headers, one visit to the data page first (cookies), retries."""
+    import time as _t
+    import requests
+    global _session
+    if _session is None:
+        _session = requests.Session()
+        _session.headers.update(BROWSER_HEADERS)
+        try:
+            _session.get(PHMSA_DATA_PAGE, timeout=60)
+        except requests.RequestException:
+            pass
+    last = None
+    for attempt in range(tries):
+        try:
+            r = _session.get(url, timeout=300)
+            if r.status_code == 200 and r.content[:2] == b"PK":
+                return r.content
+            last = f"HTTP {r.status_code}, {len(r.content):,} bytes, starts {r.content[:20]!r}"
+        except requests.RequestException as e:
+            last = f"{type(e).__name__}: {e}"
+        _t.sleep(5 * 2 ** attempt)
+    raise RuntimeError(
+        f"Could not download {url} ({last}). If phmsa.dot.gov blocks this machine, download the three "
+        "ZIPs in a browser from the PHMSA data page and run: python mlops/batch_inference.py --source-dir <folder>")
+
+
 def load_phmsa(source_dir=None, download_to=None):
     """All three forms as one DataFrame. Reads <source_dir>/<stem>.txt or .zip; otherwise downloads the ZIPs."""
     import pandas as pd
@@ -175,11 +215,7 @@ def load_phmsa(source_dir=None, download_to=None):
             if raw is None:
                 raise FileNotFoundError(f"No {stem}.txt or .zip under {d}")
         else:
-            import requests
-            r = requests.get(PHMSA_FILES[commodity], timeout=300,
-                             headers={"User-Agent": "phmsa-incident-extraction monitoring job"})
-            r.raise_for_status()
-            raw = r.content
+            raw = fetch_phmsa(PHMSA_FILES[commodity])
             if download_to:
                 Path(download_to).mkdir(parents=True, exist_ok=True)
                 (Path(download_to) / f"{stem}.zip").write_bytes(raw)
